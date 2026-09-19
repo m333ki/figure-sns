@@ -1,0 +1,165 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { UserProfile } from "@/types";
+import UserAvatar from "@/components/UserAvatar";
+
+export default function EditProfileModal({
+  profile,
+  onSave,
+  onClose,
+}: {
+  profile: UserProfile;
+  onSave: (profile: UserProfile) => void;
+  onClose: () => void;
+}) {
+  const [username, setUsername] = useState(profile.username);
+  const [bio, setBio] = useState(profile.bio);
+  const [avatarUrl, setAvatarUrl] = useState(profile.avatarUrl);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
+  const canSave = username.trim().length > 0;
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAvatarUrl(URL.createObjectURL(file));
+    e.target.value = "";
+  };
+
+  const handleSave = () => {
+    if (!canSave) return;
+    onSave({ ...profile, username: username.trim(), bio: bio.trim(), avatarUrl });
+    onClose();
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+      onClick={onClose}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="プロフィールを編集"
+        onClick={(e) => e.stopPropagation()}
+        className="flex max-h-[85vh] w-full max-w-md flex-col overflow-hidden rounded-2xl bg-white shadow-xl dark:bg-gray-900"
+      >
+        <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3 dark:border-gray-800">
+          <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+            プロフィールを編集
+          </h2>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="閉じる"
+            className="flex h-7 w-7 items-center justify-center rounded-full text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+          >
+            <svg
+              className="h-4 w-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div className="overflow-y-auto p-4">
+          <p className="mb-2 text-xs font-medium text-gray-500 dark:text-gray-400">アイコン</p>
+          <div className="mb-4 flex items-center gap-3">
+            <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+              <UserAvatar src={avatarUrl} alt={username} />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="rounded-full border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+              >
+                画像を選択
+              </button>
+              {avatarUrl && (
+                <button
+                  type="button"
+                  onClick={() => setAvatarUrl(null)}
+                  className="text-xs text-gray-400 underline-offset-2 hover:text-gray-600 hover:underline dark:text-gray-500 dark:hover:text-gray-300"
+                >
+                  画像を削除
+                </button>
+              )}
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+          </div>
+
+          <label
+            className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400"
+            htmlFor="edit-username"
+          >
+            表示名
+          </label>
+          <input
+            id="edit-username"
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            maxLength={30}
+            className="mb-4 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none focus:border-pink-400 dark:border-gray-700 dark:text-gray-100"
+          />
+
+          <label
+            className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400"
+            htmlFor="edit-bio"
+          >
+            自己紹介
+          </label>
+          <textarea
+            id="edit-bio"
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            maxLength={160}
+            rows={3}
+            className="w-full resize-none rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none focus:border-pink-400 dark:border-gray-700 dark:text-gray-100"
+          />
+          <p className="mt-1 text-right text-[11px] text-gray-400 dark:text-gray-500">
+            {bio.length}/160
+          </p>
+        </div>
+
+        <div className="flex gap-2 border-t border-gray-100 px-4 py-3 dark:border-gray-800">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 rounded-full border border-gray-300 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+          >
+            キャンセル
+          </button>
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={!canSave}
+            className="flex-1 rounded-full bg-pink-600 py-2 text-sm font-medium text-white transition hover:bg-pink-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            保存
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
