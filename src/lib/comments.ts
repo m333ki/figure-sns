@@ -1,12 +1,12 @@
 import { supabase } from "@/lib/supabase";
 import { PostComment } from "@/types";
-import { dummyUserProfile } from "@/lib/dummy-data";
-import { FALLBACK_AVATAR_URL } from "@/lib/posts";
+import { ensureProfileAndGetAvatarUrl } from "@/lib/profiles";
 
 type DbComment = {
   id: string;
   post_id: string;
   parent_id: string | null;
+  user_id: string | null;
   username: string;
   user_avatar_url: string | null;
   body: string;
@@ -18,6 +18,7 @@ function mapDbCommentToComment(row: DbComment): PostComment {
     id: row.id,
     postId: row.post_id,
     parentId: row.parent_id,
+    userId: row.user_id,
     username: row.username,
     userAvatarUrl: row.user_avatar_url,
     body: row.body,
@@ -45,13 +46,24 @@ export type CreateCommentInput = {
 export async function createComment(
   input: CreateCommentInput
 ): Promise<PostComment> {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) throw new Error("ログインが必要です");
+  const username =
+    (session.user.user_metadata?.username as string | undefined) ??
+    session.user.email?.split("@")[0] ??
+    "unknown";
+  const avatarUrl = await ensureProfileAndGetAvatarUrl(session.user.id, username);
+
   let { data, error } = await supabase
     .from("comments")
     .insert({
       post_id: input.postId,
       parent_id: input.parentId ?? null,
-      username: dummyUserProfile.username,
-      user_avatar_url: dummyUserProfile.avatarUrl ?? FALLBACK_AVATAR_URL,
+      user_id: session.user.id,
+      username,
+      user_avatar_url: avatarUrl,
       body: input.body,
     })
     .select()
@@ -64,8 +76,9 @@ export async function createComment(
       .from("comments")
       .insert({
         post_id: input.postId,
-        username: dummyUserProfile.username,
-        user_avatar_url: dummyUserProfile.avatarUrl ?? FALLBACK_AVATAR_URL,
+        user_id: session.user.id,
+        username,
+        user_avatar_url: avatarUrl,
         body: input.body,
       })
       .select()
@@ -83,4 +96,22 @@ export async function createComment(
     });
 
   return mapDbCommentToComment(data as DbComment);
+}
+
+// `decrementBy` covers cascade-deleted replies too: deleting a top-level
+// comment with N replies removes 1+N rows, so the counter needs the same
+// adjustment or it drifts upward forever (nothing else decrements it).
+export async function deleteComment(
+  commentId: string,
+  postId: string,
+  decrementBy: number
+): Promise<void> {
+  const { error } = await supabase.from("comments").delete().eq("id", commentId);
+  if (error) throw error;
+
+  await supabase
+    .rpc("increment_post_comments", { post_id: postId, delta: -decrementBy })
+    .then(({ error: rpcError }) => {
+      if (rpcError) console.error("increment_post_comments failed", rpcError);
+    });
 }

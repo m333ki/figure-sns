@@ -1,45 +1,56 @@
 import Link from "next/link";
 import Image from "next/image";
+import { Bookmark, Send } from "lucide-react";
 import { Post } from "@/types";
-import PostImage from "@/components/PostImage";
-import PostReportMenu from "@/components/PostReportMenu";
+import PostImageCarousel from "@/components/PostImageCarousel";
+import PostOptionsMenu from "@/components/PostOptionsMenu";
 import ExpandableText from "@/components/ExpandableText";
+import HashtagText from "@/components/HashtagText";
+import { useAuth } from "@/context/AuthContext";
+import { usePosts } from "@/context/PostsContext";
 
 export default function PostCard({
   post,
   onTogglePin,
   isLiked,
   onToggleLike,
+  isSaved,
+  onToggleSave,
   onOpenDetail,
 }: {
   post: Post;
   onTogglePin?: () => void;
   isLiked?: boolean;
   onToggleLike?: () => void;
+  isSaved?: boolean;
+  onToggleSave?: () => void;
   onOpenDetail?: () => void;
 }) {
+  const { user } = useAuth();
+  const { deletePost } = usePosts();
+  const isOwner = !!user && post.userId === user.id;
+  const profileHref = isOwner
+    ? "/mypage"
+    : post.userId
+      ? `/u/${post.userId}?username=${encodeURIComponent(post.username)}`
+      : null;
+
   return (
     <article className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md dark:border-gray-800 dark:bg-gray-900">
       <div className="relative w-full">
-        <PostImage
-          src={post.imageUrl}
+        <PostImageCarousel
+          images={post.imageUrls}
           alt={post.figureName ?? post.username}
           sizes="(max-width: 640px) 100vw, 640px"
+          onImageClick={onOpenDetail}
         />
 
         {onOpenDetail && (
-          <button
-            type="button"
-            onClick={onOpenDetail}
-            aria-label="投稿を拡大表示"
-            className="absolute inset-0 h-full w-full"
-          />
-        )}
-
-        {onOpenDetail && (
           <div className="absolute right-2 top-2 z-10">
-            <PostReportMenu
+            <PostOptionsMenu
               postId={post.id}
+              canDelete={isOwner}
+              onDelete={() => deletePost(post.id)}
               buttonClassName="bg-black/40 text-white hover:bg-black/60 hover:text-white"
             />
           </div>
@@ -86,30 +97,56 @@ export default function PostCard({
 
         {post.caption && (
           <ExpandableText
-            text={post.caption}
+            text={<HashtagText text={post.caption} />}
             className="whitespace-pre-wrap break-words text-sm text-gray-600 dark:text-gray-400"
           />
         )}
 
         <div className="flex items-center justify-between">
-          <Link
-            href="/mypage"
-            className="flex min-w-0 items-center gap-2 rounded-full transition hover:opacity-80"
-          >
-            <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
-              <Image
-                src={post.userAvatarUrl}
-                alt={post.username}
-                fill
-                className="object-cover"
-              />
+          {profileHref ? (
+            <Link
+              href={profileHref}
+              className="flex min-w-0 items-center gap-2 rounded-full transition hover:opacity-80"
+            >
+              <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+                <Image
+                  src={post.userAvatarUrl}
+                  alt={post.username}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              <span className="truncate text-sm font-medium text-gray-700 dark:text-gray-300">
+                {post.username}
+              </span>
+            </Link>
+          ) : (
+            <div className="flex min-w-0 items-center gap-2">
+              <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+                <Image
+                  src={post.userAvatarUrl}
+                  alt={post.username}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              <span className="truncate text-sm font-medium text-gray-700 dark:text-gray-300">
+                {post.username}
+              </span>
             </div>
-            <span className="truncate text-sm font-medium text-gray-700 dark:text-gray-300">
-              {post.username}
-            </span>
-          </Link>
+          )}
 
           <div className="flex items-center gap-4">
+            {user && post.userId && post.userId !== user.id && (
+              <Link
+                href={`/chat/${post.userId}?username=${encodeURIComponent(post.username)}`}
+                aria-label={`${post.username}さんにメッセージを送る`}
+                className="flex items-center text-gray-400 transition hover:text-pink-500 dark:text-gray-500"
+              >
+                <Send size={18} strokeWidth={1.8} />
+              </Link>
+            )}
+
             {onOpenDetail && (
               <button
                 type="button"
@@ -140,6 +177,20 @@ export default function PostCard({
                 <HeartIcon filled={false} />
                 {post.likeCount}
               </div>
+            )}
+
+            {onToggleSave && (
+              <button
+                type="button"
+                onClick={onToggleSave}
+                aria-pressed={isSaved}
+                aria-label={isSaved ? "保存を解除" : "保存する"}
+                className={`flex items-center transition ${
+                  isSaved ? "text-pink-600 dark:text-pink-400" : "text-gray-400 hover:text-pink-500 dark:text-gray-500"
+                }`}
+              >
+                <Bookmark size={20} fill={isSaved ? "currentColor" : "none"} strokeWidth={1.8} />
+              </button>
             )}
           </div>
         </div>

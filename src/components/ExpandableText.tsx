@@ -1,6 +1,6 @@
 "use client";
 
-import { useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 
 export default function ExpandableText({
   text,
@@ -9,7 +9,7 @@ export default function ExpandableText({
   buttonClassName = "mt-0.5 text-xs font-medium text-gray-400 transition hover:text-pink-500 dark:text-gray-500",
   lines = 3,
 }: {
-  text: string;
+  text: ReactNode;
   className?: string;
   wrapperClassName?: string;
   buttonClassName?: string;

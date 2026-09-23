@@ -3,13 +3,17 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { X } from "lucide-react";
+import { Bookmark, Send, X } from "lucide-react";
 import { Post, PostComment } from "@/types";
-import { fetchComments, createComment } from "@/lib/comments";
+import { fetchComments, createComment, deleteComment } from "@/lib/comments";
+import { notifyComment } from "@/lib/notifications";
 import { usePosts } from "@/context/PostsContext";
+import { useAuth } from "@/context/AuthContext";
 import UserAvatar from "@/components/UserAvatar";
-import PostReportMenu from "@/components/PostReportMenu";
+import PostOptionsMenu from "@/components/PostOptionsMenu";
 import ExpandableText from "@/components/ExpandableText";
+import HashtagText from "@/components/HashtagText";
+import PostImageCarousel from "@/components/PostImageCarousel";
 
 type ReplyTarget = { parentId: string; username: string };
 
@@ -18,15 +22,20 @@ export default function PostDetailModal({
   post,
   isLiked,
   onToggleLike,
+  isSaved,
+  onToggleSave,
   onClose,
 }: {
   open: boolean;
   post: Post | null;
   isLiked: boolean;
   onToggleLike: () => void;
+  isSaved?: boolean;
+  onToggleSave?: () => void;
   onClose: () => void;
 }) {
-  const { incrementCommentCount } = usePosts();
+  const { incrementCommentCount, deletePost } = usePosts();
+  const { user, promptLogin } = useAuth();
   const [comments, setComments] = useState<PostComment[]>([]);
   const [commentsLoading, setCommentsLoading] = useState(false);
   const [commentsError, setCommentsError] = useState<string | null>(null);
@@ -112,6 +121,10 @@ export default function PostDetailModal({
 
   const handleAddComment = async () => {
     if (!canSubmitComment) return;
+    if (!user) {
+      promptLogin();
+      return;
+    }
     setCommentSubmitting(true);
     try {
       const newComment = await createComment({
@@ -123,6 +136,9 @@ export default function PostDetailModal({
       setCommentBody("");
       setReplyTarget(null);
       incrementCommentCount(post.id);
+      if (post.userId && post.userId !== user.id) {
+        notifyComment(post.userId, newComment.username, post.id, newComment.body);
+      }
     } catch (e) {
       setCommentsError(
         e instanceof Error ? e.message : "コメントの投稿に失敗しました"
@@ -131,6 +147,38 @@ export default function PostDetailModal({
       setCommentSubmitting(false);
     }
   };
+
+  const handleDeletePost = async () => {
+    try {
+      await deletePost(post.id);
+      onClose();
+    } catch {
+      window.alert("削除に失敗しました。もう一度お試しください。");
+    }
+  };
+
+  const handleDeleteComment = async (comment: PostComment) => {
+    if (!window.confirm("このコメントを削除しますか？")) return;
+    const replyCount = comment.parentId
+      ? 0
+      : (repliesByParent.get(comment.id)?.length ?? 0);
+    try {
+      await deleteComment(comment.id, post.id, 1 + replyCount);
+      setComments((prev) =>
+        prev.filter((c) => c.id !== comment.id && c.parentId !== comment.id)
+      );
+      incrementCommentCount(post.id, -(1 + replyCount));
+    } catch {
+      window.alert("コメントの削除に失敗しました。もう一度お試しください。");
+    }
+  };
+
+  const isOwner = !!user && post.userId === user.id;
+  const profileHref = isOwner
+    ? "/mypage"
+    : post.userId
+      ? `/u/${post.userId}?username=${encodeURIComponent(post.username)}`
+      : null;
 
   return (
     <div
@@ -146,32 +194,56 @@ export default function PostDetailModal({
       >
         {/* Left: image */}
         <div className="relative flex h-[58vh] w-full shrink-0 items-center justify-center bg-neutral-900 sm:h-full sm:w-2/3">
-          <Image
-            src={post.imageUrl}
+          <PostImageCarousel
+            images={post.imageUrls}
             alt={post.figureName ?? post.username}
-            fill
             sizes="(max-width: 640px) 100vw, 1024px"
-            className="h-full w-full object-contain"
+            aspectMode="fill"
           />
         </div>
 
         {/* Right: info + comments + input */}
         <div className="flex min-h-0 w-full flex-1 flex-col sm:w-1/3">
           <div className="flex shrink-0 items-center justify-between border-b border-gray-100 px-4 py-3 dark:border-gray-800">
-            <Link
-              href="/mypage"
-              onClick={onClose}
-              className="flex min-w-0 items-center gap-2.5 rounded-full transition hover:opacity-80"
-            >
-              <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
-                <UserAvatar src={post.userAvatarUrl} alt={post.username} />
+            {profileHref ? (
+              <Link
+                href={profileHref}
+                onClick={onClose}
+                className="flex min-w-0 items-center gap-2.5 rounded-full transition hover:opacity-80"
+              >
+                <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+                  <UserAvatar src={post.userAvatarUrl} alt={post.username} />
+                </div>
+                <span className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">
+                  {post.username}
+                </span>
+              </Link>
+            ) : (
+              <div className="flex min-w-0 items-center gap-2.5">
+                <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+                  <UserAvatar src={post.userAvatarUrl} alt={post.username} />
+                </div>
+                <span className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">
+                  {post.username}
+                </span>
               </div>
-              <span className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">
-                {post.username}
-              </span>
-            </Link>
+            )}
             <div className="flex shrink-0 items-center gap-1">
-              <PostReportMenu postId={post.id} />
+              {user && post.userId && post.userId !== user.id && (
+                <Link
+                  href={`/chat/${post.userId}?username=${encodeURIComponent(post.username)}`}
+                  onClick={onClose}
+                  aria-label={`${post.username}さんにメッセージを送る`}
+                  className="flex h-7 w-7 items-center justify-center rounded-full text-gray-400 transition hover:bg-gray-100 hover:text-pink-500 dark:text-gray-500 dark:hover:bg-gray-800"
+                >
+                  <Send size={16} strokeWidth={1.8} />
+                </Link>
+              )}
+              <PostOptionsMenu
+                postId={post.id}
+                canDelete={isOwner}
+                onDelete={handleDeletePost}
+              />
               <button
                 type="button"
                 onClick={onClose}
@@ -194,13 +266,13 @@ export default function PostDetailModal({
             )}
             {post.caption && (
               <ExpandableText
-                text={post.caption}
+                text={<HashtagText text={post.caption} />}
                 wrapperClassName="mb-3"
                 className="whitespace-pre-wrap break-words text-sm text-gray-700 dark:text-gray-300"
               />
             )}
 
-            <div className="mb-4 flex items-center gap-1">
+            <div className="mb-4 flex items-center justify-between">
               <button
                 type="button"
                 onClick={onToggleLike}
@@ -212,6 +284,20 @@ export default function PostDetailModal({
                 <HeartIcon filled={isLiked} />
                 {post.likeCount}
               </button>
+
+              {onToggleSave && (
+                <button
+                  type="button"
+                  onClick={onToggleSave}
+                  aria-pressed={isSaved}
+                  aria-label={isSaved ? "保存を解除" : "保存する"}
+                  className={`flex items-center transition ${
+                    isSaved ? "text-pink-600 dark:text-pink-400" : "text-gray-400 hover:text-pink-500 dark:text-gray-500"
+                  }`}
+                >
+                  <Bookmark size={20} fill={isSaved ? "currentColor" : "none"} strokeWidth={1.8} />
+                </button>
+              )}
             </div>
 
             <div className="border-t border-gray-100 pt-3 dark:border-gray-800">
@@ -228,13 +314,23 @@ export default function PostDetailModal({
                 <ul className="space-y-4">
                   {topLevelComments.map((c) => (
                     <li key={c.id}>
-                      <CommentRow comment={c} onReply={() => handleReplyClick(c.id, c.username)} />
+                      <CommentRow
+                        comment={c}
+                        canDelete={!!user && c.userId === user.id}
+                        onReply={() => handleReplyClick(c.id, c.username)}
+                        onDelete={() => handleDeleteComment(c)}
+                      />
                       {(repliesByParent.get(c.id) ?? []).map((r) => (
                         <div
                           key={r.id}
                           className="ml-9 mt-3 border-l-2 border-gray-100 pl-3 dark:border-gray-800"
                         >
-                          <CommentRow comment={r} onReply={() => handleReplyClick(c.id, r.username)} />
+                          <CommentRow
+                            comment={r}
+                            canDelete={!!user && r.userId === user.id}
+                            onReply={() => handleReplyClick(c.id, r.username)}
+                            onDelete={() => handleDeleteComment(r)}
+                          />
                         </div>
                       ))}
                     </li>
@@ -266,7 +362,7 @@ export default function PostDetailModal({
                   onChange={(e) => setCommentBody(e.target.value)}
                   maxLength={200}
                   rows={2}
-                  placeholder="コメントを追加..."
+                  placeholder={user ? "コメントを追加..." : "ログインするとコメントできます"}
                   className="w-full resize-none rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none focus:border-pink-400 dark:border-gray-700 dark:text-gray-100"
                 />
                 <p className="mt-0.5 text-right text-[11px] text-gray-400 dark:text-gray-500">
@@ -291,32 +387,74 @@ export default function PostDetailModal({
 
 function CommentRow({
   comment,
+  canDelete,
   onReply,
+  onDelete,
 }: {
   comment: PostComment;
+  canDelete: boolean;
   onReply: () => void;
+  onDelete: () => void;
 }) {
+  const { user } = useAuth();
+  const isOwnComment = !!user && comment.userId === user.id;
+  const profileHref = isOwnComment
+    ? "/mypage"
+    : comment.userId
+      ? `/u/${comment.userId}?username=${encodeURIComponent(comment.username)}`
+      : null;
+  const avatar = (
+    <div className="relative h-7 w-7 shrink-0 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+      {comment.userAvatarUrl && (
+        <Image src={comment.userAvatarUrl} alt={comment.username} fill className="object-cover" />
+      )}
+    </div>
+  );
+
   return (
     <div className="flex items-start gap-2.5">
-      <div className="relative h-7 w-7 shrink-0 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
-        {comment.userAvatarUrl && (
-          <Image src={comment.userAvatarUrl} alt={comment.username} fill className="object-cover" />
-        )}
-      </div>
+      {profileHref ? <Link href={profileHref}>{avatar}</Link> : avatar}
       <div className="min-w-0 flex-1">
-        <p className="text-xs font-medium text-gray-800 dark:text-gray-200">{comment.username}</p>
+        {profileHref ? (
+          <Link href={profileHref} className="inline-block">
+            <p className="text-xs font-medium text-gray-800 hover:underline dark:text-gray-200">
+              {comment.username}
+            </p>
+          </Link>
+        ) : (
+          <p className="text-xs font-medium text-gray-800 dark:text-gray-200">{comment.username}</p>
+        )}
         <ExpandableText
           text={comment.body}
           className="whitespace-pre-wrap break-words text-sm leading-relaxed text-gray-700 dark:text-gray-300"
           buttonClassName="mt-0.5 text-[11px] font-medium text-gray-400 transition hover:text-pink-500 dark:text-gray-500"
         />
-        <button
-          type="button"
-          onClick={onReply}
-          className="mt-1 text-[11px] font-medium text-gray-400 transition hover:text-pink-500 dark:text-gray-500"
-        >
-          返信
-        </button>
+        <div className="mt-1 flex items-center gap-3">
+          <button
+            type="button"
+            onClick={onReply}
+            className="text-[11px] font-medium text-gray-400 transition hover:text-pink-500 dark:text-gray-500"
+          >
+            返信
+          </button>
+          {user && comment.userId && comment.userId !== user.id && (
+            <Link
+              href={`/chat/${comment.userId}?username=${encodeURIComponent(comment.username)}`}
+              className="text-[11px] font-medium text-gray-400 transition hover:text-pink-500 dark:text-gray-500"
+            >
+              メッセージ
+            </Link>
+          )}
+          {canDelete && (
+            <button
+              type="button"
+              onClick={onDelete}
+              className="text-[11px] font-medium text-gray-400 transition hover:text-red-500 dark:text-gray-500"
+            >
+              削除
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

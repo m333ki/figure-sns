@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+/* Reserves the scrollbar's width up front so pages/tabs that cross the
+   viewport-height threshold (scrollbar appears/disappears) don't shift the
+   whole layout sideways when that happens. */
+html {
+  scrollbar-gutter: stable;
+}
+
 :root {
   --background: #f7f7f8;
   --foreground: #171717;

@@ -2,15 +2,16 @@
 
 import { useState } from "react";
 import { UserProfile } from "@/types";
+import { Profile } from "@/lib/profiles";
 import EditProfileModal from "@/components/mypage/EditProfileModal";
 import UserAvatar from "@/components/UserAvatar";
 
 export default function ProfileHeader({
   profile,
-  onSave,
+  onSaved,
 }: {
   profile: UserProfile;
-  onSave: (profile: UserProfile) => void;
+  onSaved: (profile: Profile) => void;
 }) {
   const [editing, setEditing] = useState(false);
 
@@ -24,9 +25,9 @@ export default function ProfileHeader({
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-lg font-bold text-gray-900 dark:text-gray-100">
-              {profile.username}
+              {profile.displayName}
             </h1>
-            <span className="text-sm text-gray-400 dark:text-gray-500">{profile.handle}</span>
+            <span className="text-sm text-gray-400 dark:text-gray-500">@{profile.username}</span>
           </div>
 
           <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">{profile.bio}</p>
@@ -65,7 +66,7 @@ export default function ProfileHeader({
       {editing && (
         <EditProfileModal
           profile={profile}
-          onSave={onSave}
+          onSaved={onSaved}
           onClose={() => setEditing(false)}
         />
       )}

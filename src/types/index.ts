@@ -1,10 +1,11 @@
 export type Post = {
   id: string;
+  userId: string | null;
   username: string;
   userAvatarUrl: string;
   figureName: string | null;
   makerName: string | null;
-  imageUrl: string;
+  imageUrls: string[];
   caption?: string | null;
   likeCount: number;
   commentCount: number;
@@ -15,23 +16,59 @@ export type PostComment = {
   id: string;
   postId: string;
   parentId: string | null;
+  userId: string | null;
   username: string;
   userAvatarUrl: string | null;
   body: string;
   createdAt: string;
 };
 
+export type AppNotification = {
+  id: string;
+  type: "like" | "comment";
+  actorUsername: string;
+  postId: string | null;
+  commentBody: string | null;
+  isRead: boolean;
+  createdAt: string;
+};
+
+export type ChatMessage = {
+  id: string;
+  senderId: string;
+  senderUsername: string;
+  recipientId: string;
+  recipientUsername: string;
+  body: string;
+  imageUrls: string[];
+  isRead: boolean;
+  createdAt: string;
+};
+
+export type ChatThreadSummary = {
+  otherUserId: string;
+  otherUsername: string;
+  lastMessage: string;
+  lastMessageAt: string;
+  unreadCount: number;
+};
+
 export type ShelfItem = {
   id: string;
-  figureName: string;
-  makerName: string;
-  imageUrl: string;
-  price: number;
+  slotIndex: number;
+  figureName: string | null;
+  makerName: string | null;
+  description: string | null;
+  price: number | null;
+  imageUrl: string; // background-removed (transparent) version
+  originalImageUrl: string | null; // pre-processing original; null for figures saved before this existed
+  backgroundRemoved: boolean; // which of the above the user wants displayed
+  displayScale: number; // zoom applied within the shelf cell only; the stored image itself is untouched
 };
 
 export type UserProfile = {
   username: string;
-  handle: string;
+  displayName: string;
   bio: string;
   avatarUrl: string | null;
   postCount: number;

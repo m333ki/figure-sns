@@ -1,13 +1,15 @@
 import { Bell, Bookmark, Home, MessageCircle, Search, User } from "lucide-react";
 
+export type NavBadgeKey = "notifications" | "chat";
+
 export const NAV_ITEMS = [
-  { href: "/", label: "ホーム", icon: Home },
-  { href: "/explore", label: "探索", icon: Search },
-  { href: "/notifications", label: "通知", icon: Bell },
-  { href: "/chat", label: "チャット", icon: MessageCircle },
-  { href: "/saved", label: "保存済み", icon: Bookmark },
-  { href: "/mypage", label: "プロフィール", icon: User },
-] as const;
+  { href: "/", label: "ホーム", icon: Home, badgeKey: undefined },
+  { href: "/search", label: "検索", icon: Search, badgeKey: undefined },
+  { href: "/notifications", label: "通知", icon: Bell, badgeKey: "notifications" as const },
+  { href: "/chat", label: "チャット", icon: MessageCircle, badgeKey: "chat" as const },
+  { href: "/saved", label: "保存済み", icon: Bookmark, badgeKey: undefined },
+  { href: "/mypage", label: "プロフィール", icon: User, badgeKey: undefined },
+] as const satisfies { href: string; label: string; icon: unknown; badgeKey: NavBadgeKey | undefined }[];
 
 export const MOBILE_NAV_ITEMS = [
   NAV_ITEMS[0],
