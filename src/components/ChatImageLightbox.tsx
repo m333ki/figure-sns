@@ -1,18 +1,15 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 
-// Minimum horizontal drag distance (px) before a touch gesture counts as a
-// swipe rather than a tap.
-const SWIPE_THRESHOLD_PX = 40;
-
-// Unlike PostImageCarousel (used in the feed, where every slide shares one
-// pre-sized box so swiping between them feels like a single fixed strip),
-// this lightbox shows one image at a time and lets the box itself resize to
-// that image's own aspect ratio -- so a square image and a tall portrait
-// image in the same message both render as large as they can, instead of
-// both being squeezed into whichever box a "shared frame" model would pick.
+// Native scroll-snap (same mechanism as PostImageCarousel) instead of a
+// hand-rolled pointerdown/pointerup drag tracker: the previous version
+// called setPointerCapture() on a wrapper that also contained the arrow
+// buttons, which per the Pointer Events spec retargets the mouse-compat
+// click event to the capturing element while capture is active -- so the
+// arrow buttons' onClick silently never fired. Native scrolling sidesteps
+// that whole class of bug and gives a real touch swipe for free.
 export default function ChatImageLightbox({
   urls,
   initialIndex,
@@ -23,30 +20,64 @@ export default function ChatImageLightbox({
   onClose: () => void;
 }) {
   const [index, setIndex] = useState(initialIndex);
-  const dragStartXRef = useRef<number | null>(null);
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const dragRef = useRef<{ startX: number; startScrollLeft: number } | null>(null);
   const multi = urls.length > 1;
 
-  const goPrev = () => setIndex((i) => Math.max(0, i - 1));
-  const goNext = () => setIndex((i) => Math.min(urls.length - 1, i + 1));
+  // Jumps to the requested starting slide once the scroller has a real
+  // width to compute an offset against -- can't scroll a 0-width element.
+  useEffect(() => {
+    const el = scrollerRef.current;
+    if (!el || !initialIndex || el.clientWidth === 0) return;
+    el.scrollTo({ left: initialIndex * el.clientWidth });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  // Pointer Events (not Touch Events) so this responds to an actual
-  // touchscreen swipe AND a desktop mouse-drag / trackpad-emulated-mouse
-  // drag alike -- Touch Events alone never fire for mouse input, which is
-  // how swiping silently stopped working after the previous rewrite.
-  const handlePointerDown = (e: React.PointerEvent) => {
-    dragStartXRef.current = e.clientX;
-    // Keeps receiving move/up events for this pointer even if it drifts
-    // outside the box mid-drag (a fast swipe easily does, since the box is
-    // only as big as the image itself, not the full screen).
-    e.currentTarget.setPointerCapture(e.pointerId);
+  const scrollToIndex = (i: number) => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const clamped = Math.max(0, Math.min(urls.length - 1, i));
+    el.scrollTo({ left: clamped * el.clientWidth, behavior: "smooth" });
   };
-  const handlePointerUp = (e: React.PointerEvent) => {
-    if (dragStartXRef.current === null) return;
-    const dx = e.clientX - dragStartXRef.current;
-    dragStartXRef.current = null;
-    if (Math.abs(dx) < SWIPE_THRESHOLD_PX) return;
-    if (dx < 0) goNext();
-    else goPrev();
+
+  const handleScroll = () => {
+    const el = scrollerRef.current;
+    if (!el || el.clientWidth === 0) return;
+    const i = Math.round(el.scrollLeft / el.clientWidth);
+    setIndex((prev) => (prev === i ? prev : i));
+  };
+
+  // Plain mouse events (not Pointer Events + setPointerCapture) so a
+  // click-and-drag scrolls the strip like a touch swipe would, without
+  // risking the button-click-swallowing bug that motivated this rewrite.
+  // Bailing out when the press starts on a button lets those keep working
+  // as ordinary clicks.
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest("button")) return;
+    const el = scrollerRef.current;
+    if (!el) return;
+    // scroll-smooth (CSS scroll-behavior: smooth) animates every scrollLeft
+    // write, including plain property assignment -- with it left on, each
+    // mousemove's assignment interrupts the previous one's in-flight
+    // animation before it gets anywhere, so the strip barely moves. Turn
+    // it off for the duration of the drag; scrollToIndex() re-enables it
+    // for the button/snap-settle case, where one discrete jump is wanted.
+    el.style.scrollBehavior = "auto";
+    dragRef.current = { startX: e.clientX, startScrollLeft: el.scrollLeft };
+  };
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!dragRef.current) return;
+    const el = scrollerRef.current;
+    if (!el) return;
+    el.scrollLeft = dragRef.current.startScrollLeft - (e.clientX - dragRef.current.startX);
+  };
+  const endDrag = () => {
+    if (!dragRef.current) return;
+    dragRef.current = null;
+    const el = scrollerRef.current;
+    if (!el || el.clientWidth === 0) return;
+    el.style.scrollBehavior = "";
+    scrollToIndex(Math.round(el.scrollLeft / el.clientWidth));
   };
 
   return (
@@ -64,29 +95,45 @@ export default function ChatImageLightbox({
       </button>
 
       <div
-        className="relative flex items-center justify-center"
-        style={{ maxWidth: "85vw", maxHeight: "85vh", touchAction: "pan-y" }}
+        className="relative"
+        style={{ width: "85vw", height: "85vh" }}
         onClick={(e) => e.stopPropagation()}
-        onPointerDown={handlePointerDown}
-        onPointerUp={handlePointerUp}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element -- each
-            image's own intrinsic size drives the box (width/height:auto),
-            which next/image's fill-a-known-container model can't express. */}
-        <img
-          src={urls[index]}
-          alt=""
-          draggable={false}
-          style={{
-            width: "auto",
-            height: "auto",
-            maxWidth: "100%",
-            maxHeight: "85vh",
-            objectFit: "contain",
-            userSelect: "none",
-          }}
-          className="rounded-lg"
-        />
+        <div
+          ref={scrollerRef}
+          onScroll={multi ? handleScroll : undefined}
+          onMouseDown={multi ? handleMouseDown : undefined}
+          onMouseMove={multi ? handleMouseMove : undefined}
+          onMouseUp={multi ? endDrag : undefined}
+          onMouseLeave={multi ? endDrag : undefined}
+          className="flex h-full w-full cursor-grab snap-x snap-mandatory overflow-x-auto scroll-smooth active:cursor-grabbing [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
+          {urls.map((url, i) => (
+            <div
+              key={url + i}
+              className="flex h-full w-full shrink-0 snap-start items-center justify-center"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element -- each
+                  image's own intrinsic size drives how large it renders
+                  (width/height:auto), which next/image's fill-a-known-
+                  container model can't express. */}
+              <img
+                src={url}
+                alt=""
+                draggable={false}
+                style={{
+                  width: "auto",
+                  height: "auto",
+                  maxWidth: "100%",
+                  maxHeight: "100%",
+                  objectFit: "contain",
+                  userSelect: "none",
+                }}
+                className="rounded-lg"
+              />
+            </div>
+          ))}
+        </div>
 
         {multi && (
           <>
@@ -95,7 +142,7 @@ export default function ChatImageLightbox({
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
-                  goPrev();
+                  scrollToIndex(index - 1);
                 }}
                 aria-label="前の画像"
                 className="absolute left-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white transition hover:bg-black/60"
@@ -108,7 +155,7 @@ export default function ChatImageLightbox({
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
-                  goNext();
+                  scrollToIndex(index + 1);
                 }}
                 aria-label="次の画像"
                 className="absolute right-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white transition hover:bg-black/60"

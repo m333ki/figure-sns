@@ -27,6 +27,34 @@ const MARK_READ_DEBOUNCE_MS = 400;
 // Fraction of a message bubble that must be on screen to count as "seen".
 const VISIBILITY_THRESHOLD = 0.6;
 
+function formatMessageTime(iso: string): string {
+  const d = new Date(iso);
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mm = String(d.getMinutes()).padStart(2, "0");
+  return `${hh}:${mm}`;
+}
+
+const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"];
+
+function formatDateHeader(iso: string): string {
+  const d = new Date(iso);
+  const now = new Date();
+  const weekday = WEEKDAYS[d.getDay()];
+  const prefix =
+    d.getFullYear() === now.getFullYear() ? "" : `${d.getFullYear()}年`;
+  return `${prefix}${d.getMonth() + 1}月${d.getDate()}日(${weekday})`;
+}
+
+function isSameDay(isoA: string, isoB: string): boolean {
+  const a = new Date(isoA);
+  const b = new Date(isoB);
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
+}
+
 type PendingChatImage = {
   id: string;
   previewUrl: string;
@@ -290,53 +318,65 @@ export default function ChatThreadPage() {
           </p>
         ) : (
           <div className="flex flex-col gap-2">
-            {messages.map((m) => {
+            {messages.map((m, i) => {
               const mine = m.senderId === user?.id;
               const hasImages = m.imageUrls.length > 0;
+              const showDateSeparator = i === 0 || !isSameDay(messages[i - 1].createdAt, m.createdAt);
               return (
-                <div
-                  key={m.id}
-                  ref={
-                    mine
-                      ? undefined
-                      : (el) => {
-                          if (el) messageElsRef.current.set(m.id, el);
-                          else messageElsRef.current.delete(m.id);
-                        }
-                  }
-                  data-message-id={mine ? undefined : m.id}
-                  className={`flex flex-col gap-1 ${mine ? "items-end" : "items-start"}`}
-                >
-                  {hasImages && (
-                    <div className="flex max-w-[75%] flex-wrap gap-1">
-                      {m.imageUrls.map((url, i) => (
-                        <button
-                          key={i}
-                          type="button"
-                          onClick={() => setLightbox({ urls: m.imageUrls, index: i })}
-                          className="relative h-36 w-36 overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800"
-                        >
-                          <Image src={url} alt="" fill sizes="144px" className="object-cover" />
-                        </button>
-                      ))}
+                <div key={m.id} className="flex flex-col gap-1">
+                  {showDateSeparator && (
+                    <div className="flex justify-center py-1">
+                      <span className="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-medium text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+                        {formatDateHeader(m.createdAt)}
+                      </span>
                     </div>
                   )}
-                  {!!m.body && (
+                  <div
+                    ref={
+                      mine
+                        ? undefined
+                        : (el) => {
+                            if (el) messageElsRef.current.set(m.id, el);
+                            else messageElsRef.current.delete(m.id);
+                          }
+                    }
+                    data-message-id={mine ? undefined : m.id}
+                    className={`flex items-end gap-1 ${mine ? "flex-row-reverse self-end" : "flex-row self-start"}`}
+                  >
                     <div
-                      className={`max-w-[75%] whitespace-pre-wrap break-words rounded-2xl px-3.5 py-2 text-sm ${
-                        mine
-                          ? "bg-pink-600 text-white"
-                          : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200"
-                      }`}
+                      className={`flex max-w-[75%] flex-col gap-1 ${mine ? "items-end" : "items-start"}`}
                     >
-                      <Linkify text={m.body} isMine={mine} />
+                      {hasImages && (
+                        <div className="flex flex-wrap gap-1">
+                          {m.imageUrls.map((url, imgIndex) => (
+                            <button
+                              key={imgIndex}
+                              type="button"
+                              onClick={() => setLightbox({ urls: m.imageUrls, index: imgIndex })}
+                              className="relative h-36 w-36 overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800"
+                            >
+                              <Image src={url} alt="" fill sizes="144px" className="object-cover" />
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      {!!m.body && (
+                        <div
+                          className={`whitespace-pre-wrap break-words rounded-2xl px-3.5 py-2 text-sm ${
+                            mine
+                              ? "bg-pink-600 text-white"
+                              : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200"
+                          }`}
+                        >
+                          <Linkify text={m.body} isMine={mine} />
+                        </div>
+                      )}
                     </div>
-                  )}
-                  {mine && m.isRead && (
-                    <span className="mt-0.5 px-1 text-[10px] text-gray-400 dark:text-gray-500">
-                      既読
-                    </span>
-                  )}
+                    <div className="flex shrink-0 flex-col items-center gap-0.5 text-[10px] whitespace-nowrap text-gray-400 dark:text-gray-500">
+                      {mine && m.isRead && <span>既読</span>}
+                      <span>{formatMessageTime(m.createdAt)}</span>
+                    </div>
+                  </div>
                 </div>
               );
             })}
