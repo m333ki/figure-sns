@@ -273,7 +273,18 @@ export default function ChatThreadPage() {
       setPendingImages([]);
       setAttachError(null);
     } catch (e) {
-      window.alert(e instanceof Error ? e.message : "送信に失敗しました");
+      // Logged in full regardless of shape -- a Supabase PostgrestError or
+      // StorageError carries .message/.details/.hint, but whatever this
+      // actually is, we want to see it verbatim in the console instead of
+      // just the generic alert text.
+      console.error("chat send failed:", e);
+      const detail =
+        e instanceof Error
+          ? e.message
+          : typeof e === "object" && e !== null && "message" in e
+            ? String((e as { message: unknown }).message)
+            : null;
+      window.alert(detail ? `送信に失敗しました: ${detail}` : "送信に失敗しました");
     } finally {
       setSending(false);
     }
@@ -341,8 +352,14 @@ export default function ChatThreadPage() {
                           }
                     }
                     data-message-id={mine ? undefined : m.id}
-                    className={`flex items-end gap-1 ${mine ? "flex-row-reverse self-end" : "flex-row self-start"}`}
+                    className={`flex items-end gap-1 ${mine ? "justify-end" : "justify-start"}`}
                   >
+                    {mine && (
+                      <div className="flex shrink-0 flex-col items-center gap-0.5 text-[10px] whitespace-nowrap text-gray-400 dark:text-gray-500">
+                        {m.isRead && <span>既読</span>}
+                        <span>{formatMessageTime(m.createdAt)}</span>
+                      </div>
+                    )}
                     <div
                       className={`flex max-w-[75%] flex-col gap-1 ${mine ? "items-end" : "items-start"}`}
                     >
@@ -372,10 +389,11 @@ export default function ChatThreadPage() {
                         </div>
                       )}
                     </div>
-                    <div className="flex shrink-0 flex-col items-center gap-0.5 text-[10px] whitespace-nowrap text-gray-400 dark:text-gray-500">
-                      {mine && m.isRead && <span>既読</span>}
-                      <span>{formatMessageTime(m.createdAt)}</span>
-                    </div>
+                    {!mine && (
+                      <div className="flex shrink-0 flex-col items-center gap-0.5 text-[10px] whitespace-nowrap text-gray-400 dark:text-gray-500">
+                        <span>{formatMessageTime(m.createdAt)}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               );
