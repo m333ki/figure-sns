@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import { Settings } from "lucide-react";
 import { UserProfile } from "@/types";
 import { Profile } from "@/lib/profiles";
 import EditProfileModal from "@/components/mypage/EditProfileModal";
@@ -54,13 +56,22 @@ export default function ProfileHeader({
           </dl>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setEditing(true)}
-          className="shrink-0 rounded-full border border-gray-300 px-4 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
-        >
-          編集
-        </button>
+        <div className="flex shrink-0 items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setEditing(true)}
+            className="rounded-full border border-gray-300 px-4 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+          >
+            編集
+          </button>
+          <Link
+            href="/settings"
+            aria-label="設定"
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-300 text-gray-600 transition hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+          >
+            <Settings size={16} />
+          </Link>
+        </div>
       </div>
 
       {editing && (
