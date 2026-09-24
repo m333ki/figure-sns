@@ -99,6 +99,7 @@ export default function BackgroundMaskEditorModal({
   const originalCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const maskCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const displayCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const canvasWrapRef = useRef<HTMLDivElement | null>(null);
   const cursorRef = useRef<HTMLDivElement | null>(null);
   const drawingRef = useRef(false);
   const lastPointRef = useRef<Point | null>(null);
@@ -124,6 +125,20 @@ export default function BackgroundMaskEditorModal({
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [onCancel]);
+
+  // Belt-and-suspenders alongside the `touch-none` CSS on this box: some
+  // mobile browsers still start their own pull-to-refresh/navigation
+  // gesture from a touch that begins here, even with touch-action set,
+  // especially once the drag has left the box's own bounds mid-stroke. A
+  // non-passive touchmove listener that unconditionally preventDefaults is
+  // the only thing that reliably stops that everywhere.
+  useEffect(() => {
+    const el = canvasWrapRef.current;
+    if (!el) return;
+    const handleTouchMove = (e: TouchEvent) => e.preventDefault();
+    el.addEventListener("touchmove", handleTouchMove, { passive: false });
+    return () => el.removeEventListener("touchmove", handleTouchMove);
+  }, []);
 
   function recomposite() {
     const display = displayCanvasRef.current;
@@ -409,7 +424,7 @@ export default function BackgroundMaskEditorModal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4"
+      className="fixed inset-0 z-[60] flex items-center justify-center overscroll-contain bg-black/70 p-4"
       onClick={onCancel}
     >
       <div
@@ -431,13 +446,14 @@ export default function BackgroundMaskEditorModal({
           </button>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto p-4">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4">
           {loadError ? (
             <p className="text-sm text-red-600 dark:text-red-400">{loadError}</p>
           ) : (
             <>
               <div
-                className="relative mx-auto mb-3 max-h-[45vh] w-full overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700"
+                ref={canvasWrapRef}
+                className="relative mx-auto mb-3 max-h-[45vh] w-full touch-none overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700"
                 style={{ aspectRatio: `${dimensions.width} / ${dimensions.height}` }}
               >
                 <div

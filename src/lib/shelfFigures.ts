@@ -3,6 +3,47 @@ import type { ShelfItem } from "@/types";
 
 export const SHELF_SLOT_COUNT = 12;
 
+const MAX_FIGURE_PHOTO_DIMENSION = 1600;
+
+// A phone camera photo (often 4000x3000px+) fed untouched into the manual
+// mask editor means decoding 2+ full-resolution ImageBitmaps and several
+// same-size canvases at once -- enough to crash the tab on a memory-
+// constrained mobile browser. Downscaling the source once, right after
+// picking it, keeps every downstream step (auto/manual background removal,
+// the canvases, the upload) working with a manageable image instead.
+// Returns the original file untouched if it's already small enough, or if
+// decoding fails for any reason (e.g. a format canvas can't read).
+export async function resizeFigurePhoto(file: File): Promise<File> {
+  try {
+    const bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, MAX_FIGURE_PHOTO_DIMENSION / Math.max(bitmap.width, bitmap.height));
+    if (scale === 1) {
+      bitmap.close();
+      return file;
+    }
+
+    const width = Math.round(bitmap.width * scale);
+    const height = Math.round(bitmap.height * scale);
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("canvas context unavailable");
+    ctx.drawImage(bitmap, 0, 0, width, height);
+    bitmap.close();
+
+    const blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, "image/jpeg", 0.9)
+    );
+    if (!blob) throw new Error("resize produced no output");
+    const name = file.name.replace(/\.\w+$/, "") + ".jpg";
+    return new File([blob], name, { type: "image/jpeg" });
+  } catch (e) {
+    console.error("figure photo resize failed, using original", e);
+    return file;
+  }
+}
+
 type DbShelfFigure = {
   id: string;
   user_id: string;
@@ -15,6 +56,8 @@ type DbShelfFigure = {
   original_image_url: string | null;
   background_removed: boolean;
   display_scale: number;
+  offset_x: number | null;
+  offset_y: number | null;
 };
 
 function mapShelfFigure(row: DbShelfFigure): ShelfItem {
@@ -29,6 +72,8 @@ function mapShelfFigure(row: DbShelfFigure): ShelfItem {
     originalImageUrl: row.original_image_url,
     backgroundRemoved: row.background_removed,
     displayScale: row.display_scale,
+    offsetX: row.offset_x ?? 0,
+    offsetY: row.offset_y ?? 0,
   };
 }
 
@@ -67,6 +112,8 @@ export type SaveShelfFigureInput = {
   originalImageUrl: string | null;
   backgroundRemoved: boolean;
   displayScale: number;
+  offsetX: number;
+  offsetY: number;
 };
 
 // One row per (user, slot) — upsert so callers don't need to know whether
@@ -91,6 +138,8 @@ export async function saveShelfFigure(input: SaveShelfFigureInput): Promise<Shel
         original_image_url: input.originalImageUrl,
         background_removed: input.backgroundRemoved,
         display_scale: input.displayScale,
+        offset_x: input.offsetX,
+        offset_y: input.offsetY,
       },
       { onConflict: "user_id,slot_index" }
     )

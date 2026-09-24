@@ -5,6 +5,26 @@
    whole layout sideways when that happens. */
 html {
   scrollbar-gutter: stable;
+  /* Stops Android Chrome's native pull-to-refresh (and the page-reload it
+     triggers) from firing when a touch drags past a scroll boundary
+     anywhere in the app -- notably while drawing near the edge of the
+     background mask editor's canvas. */
+  overscroll-behavior-y: none;
+}
+
+/* Touch devices auto-zoom the page when focusing a text field smaller than
+   16px, then don't reliably zoom back out on blur -- fixed-height layouts
+   (like the chat thread) end up visibly shifted afterward. Every text
+   input/textarea in the app is set via Tailwind's text-sm (14px); this
+   overrides that on coarse-pointer (touch) devices only, since the zoom
+   behavior doesn't exist with a mouse and desktop screens have room to
+   keep the smaller size. */
+@media (pointer: coarse) {
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
 }
 
 :root {

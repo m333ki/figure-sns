@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { SquarePen } from "lucide-react";
-import { MOBILE_NAV_ITEMS } from "@/lib/nav-items";
+import { MOBILE_NAV_ITEMS, isChatThreadRoute } from "@/lib/nav-items";
 import { useNavBadgeCounts } from "@/lib/navBadges";
 import { useScrollToTopAndRefresh } from "@/lib/useScrollToTopAndRefresh";
 import { useComposer } from "@/context/ComposerContext";
@@ -17,16 +17,20 @@ export default function MobileBottomNav() {
   const badgeCounts = useNavBadgeCounts();
   const handleHomePress = useScrollToTopAndRefresh();
 
+  if (isChatThreadRoute(pathname)) return null;
+
   return (
     <>
-      <button
-        type="button"
-        onClick={user ? open : promptLogin}
-        aria-label="投稿する"
-        className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] right-4 z-20 flex h-14 w-14 items-center justify-center rounded-full bg-pink-600 text-white shadow-lg transition hover:bg-pink-700 lg:hidden"
-      >
-        <SquarePen size={22} />
-      </button>
+      {pathname === "/" && (
+        <button
+          type="button"
+          onClick={user ? open : promptLogin}
+          aria-label="投稿する"
+          className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] right-4 z-20 flex h-14 w-14 items-center justify-center rounded-full bg-pink-600 text-white shadow-lg transition hover:bg-pink-700 lg:hidden"
+        >
+          <SquarePen size={22} />
+        </button>
+      )}
 
       <nav
         className="fixed inset-x-0 bottom-0 z-20 flex border-t border-gray-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden dark:border-gray-800 dark:bg-gray-950/95"

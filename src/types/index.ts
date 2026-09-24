@@ -64,6 +64,12 @@ export type ShelfItem = {
   originalImageUrl: string | null; // pre-processing original; null for figures saved before this existed
   backgroundRemoved: boolean; // which of the above the user wants displayed
   displayScale: number; // zoom applied within the shelf cell only; the stored image itself is untouched
+  // Pan applied within the shelf cell only, alongside displayScale -- each is
+  // a fraction of the cell's own width/height (not pixels), so it stays
+  // correct across the different cell sizes the same figure renders at
+  // (edit-preview box vs. the actual shelf grid).
+  offsetX: number;
+  offsetY: number;
 };
 
 export type UserProfile = {

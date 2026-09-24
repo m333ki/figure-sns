@@ -3,9 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
-import { Eraser, Plus, Wand2 } from "lucide-react";
+import { Camera, Eraser, Plus, Wand2 } from "lucide-react";
 import {
   deleteShelfFigure,
+  resizeFigurePhoto,
   saveShelfFigure,
   uploadShelfFigureImage,
 } from "@/lib/shelfFigures";
@@ -49,10 +50,23 @@ export default function FigureFormModal({
   const [backgroundRemoved, setBackgroundRemoved] = useState(
     existing?.backgroundRemoved ?? false
   );
-  // Display-only zoom within the shelf cell -- never touches the stored
+  // Display-only zoom/pan within the shelf cell -- never touches the stored
   // image, so it's plain local state saved alongside the other fields
-  // rather than something the mask editor needs to know about.
+  // rather than something the mask editor needs to know about. offsetX/Y
+  // are fractions of the preview box's own width/height (drag-to-reposition
+  // below), not pixels, so they carry over correctly to the shelf grid's
+  // differently-sized cells.
   const [displayScale, setDisplayScale] = useState(existing?.displayScale ?? 1);
+  const [offsetX, setOffsetX] = useState(existing?.offsetX ?? 0);
+  const [offsetY, setOffsetY] = useState(existing?.offsetY ?? 0);
+  const previewBoxRef = useRef<HTMLDivElement>(null);
+  const dragRef = useRef<{
+    startClientX: number;
+    startClientY: number;
+    startOffsetX: number;
+    startOffsetY: number;
+    moved: boolean;
+  } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -91,6 +105,40 @@ export default function FigureFormModal({
   const maskEditorOriginalSrc = originalPreviewUrl ?? transparentPreviewUrl;
   const maskEditorInitialMaskSrc = previewUrl;
 
+  const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+
+  // Drag-to-reposition on the preview box itself, only once there's an
+  // image to move. offsetX/Y are stored as fractions of the box's own
+  // width/height (see the state comment above) so the drag math just needs
+  // the box's current rect, not any fixed pixel size.
+  const handlePreviewPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!previewUrl) return;
+    dragRef.current = {
+      startClientX: e.clientX,
+      startClientY: e.clientY,
+      startOffsetX: offsetX,
+      startOffsetY: offsetY,
+      moved: false,
+    };
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+
+  const handlePreviewPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const drag = dragRef.current;
+    const box = previewBoxRef.current;
+    if (!drag || !box) return;
+    const rect = box.getBoundingClientRect();
+    const dx = e.clientX - drag.startClientX;
+    const dy = e.clientY - drag.startClientY;
+    if (!drag.moved && Math.hypot(dx, dy) > 3) drag.moved = true;
+    setOffsetX(clamp(drag.startOffsetX + dx / rect.width, -0.5, 0.5));
+    setOffsetY(clamp(drag.startOffsetY + dy / rect.height, -0.5, 0.5));
+  };
+
+  const handlePreviewPointerUp = () => {
+    dragRef.current = null;
+  };
+
   const runBackgroundRemoval = async (source: File) => {
     setBgRemovalNotice(null);
     setProcessingImage(true);
@@ -109,16 +157,23 @@ export default function FigureFormModal({
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selected = e.target.files?.[0];
-    if (!selected) return;
+    const picked = e.target.files?.[0];
+    if (!picked) return;
     e.target.value = "";
 
     setBgRemovalNotice(null);
+    // A phone camera photo straight off the file picker can be huge (12MP+);
+    // downscale it once here so every downstream step -- background removal,
+    // the manual mask editor's canvases, the eventual upload -- works with a
+    // manageable image instead of risking a memory crash on mobile.
+    const selected = await resizeFigurePhoto(picked);
     setOriginalFile(selected);
     setTransparentFile(null);
     setOriginalPreviewUrl(URL.createObjectURL(selected));
     setTransparentPreviewUrl(null);
     setBackgroundRemoved(false);
+    setOffsetX(0);
+    setOffsetY(0);
 
     if (autoRemoveBackground) {
       await runBackgroundRemoval(selected);
@@ -207,6 +262,8 @@ export default function FigureFormModal({
         originalImageUrl,
         backgroundRemoved: finalBackgroundRemoved,
         displayScale,
+        offsetX,
+        offsetY,
       });
       onSaved(saved);
       onClose();
@@ -265,31 +322,59 @@ export default function FigureFormModal({
 
         <div className="min-h-0 flex-1 overflow-y-auto p-4">
           <p className="mb-2 text-xs font-medium text-gray-500 dark:text-gray-400">写真</p>
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={processingImage}
-            className="relative mb-1.5 flex aspect-[3/4] w-28 items-center justify-center overflow-hidden rounded-lg border border-dashed border-gray-300 text-gray-400 transition hover:border-pink-300 hover:text-pink-500 disabled:cursor-not-allowed dark:border-gray-700 dark:text-gray-500"
-          >
-            {previewUrl ? (
+          {previewUrl ? (
+            <div
+              ref={previewBoxRef}
+              onPointerDown={handlePreviewPointerDown}
+              onPointerMove={handlePreviewPointerMove}
+              onPointerUp={handlePreviewPointerUp}
+              onPointerCancel={handlePreviewPointerUp}
+              className="relative mb-1.5 flex aspect-[3/4] w-28 touch-none items-center justify-center overflow-hidden rounded-lg border border-gray-300 text-gray-400 dark:border-gray-700 dark:text-gray-500"
+              style={{ cursor: processingImage ? "default" : "grab" }}
+            >
               <Image
                 src={previewUrl}
                 alt="プレビュー"
                 fill
                 unoptimized
-                className="object-contain object-center"
-                style={{ transform: `scale(${displayScale})`, transformOrigin: "center" }}
+                draggable={false}
+                className="pointer-events-none object-contain object-center"
+                style={{
+                  transform: `translate(${offsetX * 100}%, ${offsetY * 100}%) scale(${displayScale})`,
+                  transformOrigin: "center",
+                }}
               />
-            ) : (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={processingImage}
+                aria-label="写真を変更"
+                className="absolute bottom-1 right-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white transition hover:bg-black/80 disabled:cursor-not-allowed"
+              >
+                <Camera size={12} />
+              </button>
+              {processingImage && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-black/60">
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                  <span className="text-[10px] text-white">背景を処理中...</span>
+                </div>
+              )}
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={processingImage}
+              className="relative mb-1.5 flex aspect-[3/4] w-28 items-center justify-center overflow-hidden rounded-lg border border-dashed border-gray-300 text-gray-400 transition hover:border-pink-300 hover:text-pink-500 disabled:cursor-not-allowed dark:border-gray-700 dark:text-gray-500"
+            >
               <Plus size={20} />
-            )}
-            {processingImage && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-black/60">
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                <span className="text-[10px] text-white">背景を処理中...</span>
-              </div>
-            )}
-          </button>
+            </button>
+          )}
+          {previewUrl && (
+            <p className="mb-1.5 text-[11px] text-gray-400 dark:text-gray-500">
+              ドラッグして位置を調整できます
+            </p>
+          )}
           <div className="mb-4">
             {bgRemovalNotice && (
               <p className="text-[11px] text-amber-600 dark:text-amber-400">

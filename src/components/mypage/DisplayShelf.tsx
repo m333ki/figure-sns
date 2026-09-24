@@ -467,7 +467,10 @@ function ShelfSlot({
         fill
         sizes="(max-width: 640px) 33vw, 160px"
         className="object-contain object-bottom p-1"
-        style={{ transform: `scale(${figure.displayScale})`, transformOrigin: "center bottom" }}
+        style={{
+          transform: `translate(${figure.offsetX * 100}%, ${figure.offsetY * 100}%) scale(${figure.displayScale})`,
+          transformOrigin: "center bottom",
+        }}
       />
       {figure.figureName && (
         <div

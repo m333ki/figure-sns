@@ -77,7 +77,6 @@ export default function ChatThreadPage() {
   const [pendingImages, setPendingImages] = useState<PendingChatImage[]>([]);
   const [attachError, setAttachError] = useState<string | null>(null);
   const [lightbox, setLightbox] = useState<{ urls: string[]; index: number } | null>(null);
-  const bottomRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const messageElsRef = useRef<Map<string, HTMLDivElement>>(new Map());
   const pendingReadIdsRef = useRef<Set<string>>(new Set());
@@ -184,8 +183,14 @@ export default function ChatThreadPage() {
     return () => observer.disconnect();
   }, [messages, user, scheduleMarkRead]);
 
+  // Scrolls only this container's own scrollTop, never scrollIntoView --
+  // that can walk up and nudge ancestor/document scroll position too, which
+  // on mobile (with the keyboard open and the page's dvh height already in
+  // flux) is what was leaving the whole thread visibly shifted after
+  // sending.
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ block: "end" });
+    const el = scrollContainerRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
   }, [messages.length]);
 
   // Revoke every still-live preview URL on unmount only -- individual
@@ -301,7 +306,7 @@ export default function ChatThreadPage() {
   }
 
   return (
-    <div className="mx-auto flex h-[calc(100dvh-3.5rem)] w-full max-w-2xl flex-col sm:h-[calc(100dvh-4rem)]">
+    <div className="mx-auto flex h-full w-full max-w-2xl flex-col pb-[env(safe-area-inset-bottom)]">
       <div className="flex shrink-0 items-center gap-2 border-b border-gray-100 px-4 py-3 dark:border-gray-800">
         <button
           type="button"
@@ -398,7 +403,6 @@ export default function ChatThreadPage() {
                 </div>
               );
             })}
-            <div ref={bottomRef} />
           </div>
         )}
       </div>

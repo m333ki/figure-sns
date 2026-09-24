@@ -5,7 +5,9 @@ import Link from "next/link";
 import { Settings } from "lucide-react";
 import { UserProfile } from "@/types";
 import { Profile } from "@/lib/profiles";
+import { useAuth } from "@/context/AuthContext";
 import EditProfileModal from "@/components/mypage/EditProfileModal";
+import FollowListModal from "@/components/mypage/FollowListModal";
 import UserAvatar from "@/components/UserAvatar";
 
 export default function ProfileHeader({
@@ -15,7 +17,9 @@ export default function ProfileHeader({
   profile: UserProfile;
   onSaved: (profile: Profile) => void;
 }) {
+  const { user } = useAuth();
   const [editing, setEditing] = useState(false);
+  const [followList, setFollowList] = useState<"followers" | "following" | null>(null);
 
   return (
     <section className="border-b border-gray-200 bg-white px-4 py-6 dark:border-gray-800 dark:bg-gray-900">
@@ -32,22 +36,42 @@ export default function ProfileHeader({
             <span className="text-sm text-gray-400 dark:text-gray-500">@{profile.username}</span>
           </div>
 
-          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">{profile.bio}</p>
+          <p className="mt-1 whitespace-pre-wrap break-words text-sm text-gray-600 dark:text-gray-400">{profile.bio}</p>
 
           <dl className="mt-3 flex gap-5 text-sm">
-            <div className="flex items-baseline gap-1">
+            <div className="flex items-baseline gap-1 whitespace-nowrap">
               <dd className="font-semibold text-gray-900 dark:text-gray-100">
                 {profile.postCount}
               </dd>
               <dt className="text-gray-500 dark:text-gray-400">投稿</dt>
             </div>
-            <div className="flex items-baseline gap-1">
+            <div
+              role="button"
+              tabIndex={0}
+              onClick={() => setFollowList("followers")}
+              onKeyDown={(e) => {
+                if (e.key !== "Enter" && e.key !== " ") return;
+                e.preventDefault();
+                setFollowList("followers");
+              }}
+              className="flex cursor-pointer items-baseline gap-1 whitespace-nowrap hover:underline"
+            >
               <dd className="font-semibold text-gray-900 dark:text-gray-100">
                 {profile.followerCount}
               </dd>
               <dt className="text-gray-500 dark:text-gray-400">フォロワー</dt>
             </div>
-            <div className="flex items-baseline gap-1">
+            <div
+              role="button"
+              tabIndex={0}
+              onClick={() => setFollowList("following")}
+              onKeyDown={(e) => {
+                if (e.key !== "Enter" && e.key !== " ") return;
+                e.preventDefault();
+                setFollowList("following");
+              }}
+              className="flex cursor-pointer items-baseline gap-1 whitespace-nowrap hover:underline"
+            >
               <dd className="font-semibold text-gray-900 dark:text-gray-100">
                 {profile.followingCount}
               </dd>
@@ -79,6 +103,14 @@ export default function ProfileHeader({
           profile={profile}
           onSaved={onSaved}
           onClose={() => setEditing(false)}
+        />
+      )}
+
+      {followList && user && (
+        <FollowListModal
+          userId={user.id}
+          mode={followList}
+          onClose={() => setFollowList(null)}
         />
       )}
     </section>

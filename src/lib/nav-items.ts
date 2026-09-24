@@ -18,3 +18,12 @@ export const MOBILE_NAV_ITEMS = [
   NAV_ITEMS[3],
   NAV_ITEMS[5],
 ] as const;
+
+// The chat thread view (not the `/chat` list) hides the bottom nav so the
+// keyboard + message composer get the full width of the screen instead of
+// competing with it for space. Shared between MobileBottomNav (which decides
+// whether to render itself) and AppShell (which reserves layout space for
+// it) so the two can't drift out of sync.
+export function isChatThreadRoute(pathname: string): boolean {
+  return pathname.startsWith("/chat/");
+}
