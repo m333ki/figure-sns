@@ -26,14 +26,14 @@ export default function MobileBottomNav() {
           type="button"
           onClick={user ? open : promptLogin}
           aria-label="投稿する"
-          className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] right-4 z-20 flex h-14 w-14 items-center justify-center rounded-full bg-pink-600 text-white shadow-lg transition hover:bg-pink-700 lg:hidden"
+          className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] right-4 z-20 flex h-14 w-14 items-center justify-center rounded-full bg-accent text-accent-foreground shadow-lg transition hover:opacity-90 lg:hidden"
         >
           <SquarePen size={22} />
         </button>
       )}
 
       <nav
-        className="fixed inset-x-0 bottom-0 z-20 flex border-t border-gray-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden dark:border-gray-800 dark:bg-gray-950/95"
+        className="fixed inset-x-0 bottom-0 z-20 flex border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
         aria-label="モバイルナビゲーション"
       >
         {MOBILE_NAV_ITEMS.map(({ href, label, icon: Icon, badgeKey }) => {
@@ -54,25 +54,19 @@ export default function MobileBottomNav() {
                     }
                   : undefined
               }
-              className="flex flex-1 flex-col items-center gap-0.5 py-2 active:opacity-70"
+              className="flex flex-1 touch-manipulation flex-col items-center gap-0.5 py-2 active:opacity-70"
             >
               <span className="relative">
                 <Icon
                   size={21}
                   strokeWidth={active ? 2.5 : 2}
-                  className={
-                    active
-                      ? "text-pink-600 dark:text-pink-400"
-                      : "text-gray-500 dark:text-gray-400"
-                  }
+                  className={active ? "text-accent" : "text-muted"}
                 />
                 {!!count && <NavBadge count={count} />}
               </span>
               <span
                 className={`text-[10px] leading-none ${
-                  active
-                    ? "font-semibold text-pink-600 dark:text-pink-400"
-                    : "text-gray-500 dark:text-gray-400"
+                  active ? "font-semibold text-accent" : "text-muted"
                 }`}
               >
                 {label}

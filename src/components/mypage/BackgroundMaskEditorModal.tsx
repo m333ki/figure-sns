@@ -418,7 +418,7 @@ export default function BackgroundMaskEditorModal({
   const toolButtonClass = (active: boolean) =>
     `flex flex-1 items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium transition ${
       active
-        ? "border-pink-400 bg-pink-50 text-pink-700 dark:bg-pink-950/30 dark:text-pink-300"
+        ? "border-accent bg-accent/10 text-accent"
         : "border-gray-200 text-gray-600 hover:border-gray-300 dark:border-gray-700 dark:text-gray-400"
     }`;
 
@@ -432,15 +432,15 @@ export default function BackgroundMaskEditorModal({
         aria-modal="true"
         aria-label="手動で調整"
         onClick={(e) => e.stopPropagation()}
-        className="flex max-h-[90vh] w-full max-w-md flex-col overflow-hidden rounded-2xl bg-white shadow-xl dark:bg-gray-900"
+        className="flex max-h-[90vh] w-full max-w-md flex-col overflow-hidden rounded-2xl bg-card shadow-xl"
       >
-        <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3 dark:border-gray-800">
-          <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">手動で調整</h2>
+        <div className="flex items-center justify-between border-b border-border px-4 py-3">
+          <h2 className="text-sm font-semibold text-foreground">手動で調整</h2>
           <button
             type="button"
             onClick={onCancel}
             aria-label="閉じる"
-            className="flex h-7 w-7 items-center justify-center rounded-full text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+            className="flex h-7 w-7 items-center justify-center rounded-full text-muted transition hover:bg-gray-100 dark:hover:bg-gray-800"
           >
             <X size={16} />
           </button>
@@ -453,7 +453,7 @@ export default function BackgroundMaskEditorModal({
             <>
               <div
                 ref={canvasWrapRef}
-                className="relative mx-auto mb-3 max-h-[45vh] w-full touch-none overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700"
+                className="relative mx-auto mb-3 max-h-[45vh] w-full touch-none overflow-hidden rounded-lg border border-border"
                 style={{ aspectRatio: `${dimensions.width} / ${dimensions.height}` }}
               >
                 <div
@@ -488,7 +488,7 @@ export default function BackgroundMaskEditorModal({
                 />
                 <div
                   ref={cursorRef}
-                  className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-pink-500 opacity-0"
+                  className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-accent opacity-0"
                   style={{ transition: "opacity 100ms" }}
                 />
                 {!ready && !loadError && (
@@ -520,7 +520,7 @@ export default function BackgroundMaskEditorModal({
               </div>
 
               <label
-                className="mb-1 flex items-center justify-between text-xs font-medium text-gray-500 dark:text-gray-400"
+                className="mb-1 flex items-center justify-between text-xs font-medium text-muted"
                 htmlFor="mask-brush-size"
               >
                 <span>ブラシサイズ</span>
@@ -533,7 +533,7 @@ export default function BackgroundMaskEditorModal({
                 max={MAX_BRUSH}
                 value={brushSize}
                 onChange={(e) => setBrushSize(Number(e.target.value))}
-                className="mb-3 w-full accent-pink-600"
+                className="mb-3 w-full accent-accent"
               />
 
               <button
@@ -586,11 +586,11 @@ export default function BackgroundMaskEditorModal({
           )}
         </div>
 
-        <div className="flex gap-2 border-t border-gray-100 px-4 py-3 dark:border-gray-800">
+        <div className="flex gap-2 border-t border-border px-4 py-3">
           <button
             type="button"
             onClick={onCancel}
-            className="flex-1 rounded-full border border-gray-300 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+            className="flex-1 rounded-full border border-gray-300 py-2 text-sm font-medium text-muted transition hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
           >
             キャンセル
           </button>
@@ -598,7 +598,7 @@ export default function BackgroundMaskEditorModal({
             type="button"
             onClick={handleConfirm}
             disabled={!ready || saving}
-            className="flex-1 rounded-full bg-pink-600 py-2 text-sm font-medium text-white transition hover:bg-pink-700 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex-1 rounded-full bg-accent py-2 text-sm font-medium text-accent-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {saving ? "適用中..." : "この内容を適用"}
           </button>

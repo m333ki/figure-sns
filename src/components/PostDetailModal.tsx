@@ -190,7 +190,7 @@ export default function PostDetailModal({
         aria-modal="true"
         aria-label="投稿の詳細"
         onClick={(e) => e.stopPropagation()}
-        className="flex max-h-[95vh] w-full max-w-6xl flex-col overflow-hidden rounded-2xl bg-white shadow-xl sm:h-[90vh] sm:flex-row dark:bg-gray-900"
+        className="flex max-h-[95vh] w-full max-w-6xl flex-col overflow-hidden rounded-2xl bg-card shadow-xl sm:h-[90vh] sm:flex-row"
       >
         {/* Left: image */}
         <div className="relative flex h-[58vh] w-full shrink-0 items-center justify-center bg-neutral-900 sm:h-full sm:w-2/3">
@@ -204,7 +204,7 @@ export default function PostDetailModal({
 
         {/* Right: info + comments + input */}
         <div className="flex min-h-0 w-full flex-1 flex-col sm:w-1/3">
-          <div className="flex shrink-0 items-center justify-between border-b border-gray-100 px-4 py-3 dark:border-gray-800">
+          <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3">
             {profileHref ? (
               <Link
                 href={profileHref}
@@ -214,7 +214,7 @@ export default function PostDetailModal({
                 <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
                   <UserAvatar src={post.userAvatarUrl} alt={post.username} />
                 </div>
-                <span className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">
+                <span className="truncate text-sm font-medium text-foreground">
                   {post.username}
                 </span>
               </Link>
@@ -223,7 +223,7 @@ export default function PostDetailModal({
                 <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
                   <UserAvatar src={post.userAvatarUrl} alt={post.username} />
                 </div>
-                <span className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">
+                <span className="truncate text-sm font-medium text-foreground">
                   {post.username}
                 </span>
               </div>
@@ -234,7 +234,7 @@ export default function PostDetailModal({
                   href={`/chat/${post.userId}?username=${encodeURIComponent(post.username)}`}
                   onClick={onClose}
                   aria-label={`${post.username}さんにメッセージを送る`}
-                  className="flex h-7 w-7 items-center justify-center rounded-full text-gray-400 transition hover:bg-gray-100 hover:text-pink-500 dark:text-gray-500 dark:hover:bg-gray-800"
+                  className="flex h-7 w-7 items-center justify-center rounded-full text-gray-400 transition hover:bg-gray-100 hover:text-accent dark:text-gray-500 dark:hover:bg-gray-800"
                 >
                   <Send size={16} strokeWidth={1.8} />
                 </Link>
@@ -248,7 +248,7 @@ export default function PostDetailModal({
                 type="button"
                 onClick={onClose}
                 aria-label="閉じる"
-                className="flex h-7 w-7 items-center justify-center rounded-full text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+                className="flex h-11 w-11 items-center justify-center rounded-full text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-300"
               >
                 <X size={16} />
               </button>
@@ -259,16 +259,16 @@ export default function PostDetailModal({
             {(post.figureName || post.makerName) && (
               <div className="mb-2">
                 {post.figureName && (
-                  <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">{post.figureName}</h3>
+                  <h3 className="text-sm font-semibold text-foreground">{post.figureName}</h3>
                 )}
-                {post.makerName && <p className="text-xs text-gray-500 dark:text-gray-400">{post.makerName}</p>}
+                {post.makerName && <p className="text-xs text-muted">{post.makerName}</p>}
               </div>
             )}
             {post.caption && (
               <ExpandableText
                 text={<HashtagText text={post.caption} />}
                 wrapperClassName="mb-3"
-                className="whitespace-pre-wrap break-words text-sm text-gray-700 dark:text-gray-300"
+                className="whitespace-pre-wrap break-words text-sm text-muted"
               />
             )}
 
@@ -278,7 +278,7 @@ export default function PostDetailModal({
                 onClick={onToggleLike}
                 aria-pressed={isLiked}
                 className={`flex items-center gap-1 text-sm ${
-                  isLiked ? "text-pink-600 dark:text-pink-400" : "text-gray-400 dark:text-gray-500"
+                  isLiked ? "text-like" : "text-gray-400 dark:text-gray-500"
                 }`}
               >
                 <HeartIcon filled={isLiked} />
@@ -292,7 +292,7 @@ export default function PostDetailModal({
                   aria-pressed={isSaved}
                   aria-label={isSaved ? "保存を解除" : "保存する"}
                   className={`flex items-center transition ${
-                    isSaved ? "text-pink-600 dark:text-pink-400" : "text-gray-400 hover:text-pink-500 dark:text-gray-500"
+                    isSaved ? "text-accent" : "text-gray-400 hover:text-accent dark:text-gray-500"
                   }`}
                 >
                   <Bookmark size={20} fill={isSaved ? "currentColor" : "none"} strokeWidth={1.8} />
@@ -300,8 +300,8 @@ export default function PostDetailModal({
               )}
             </div>
 
-            <div className="border-t border-gray-100 pt-3 dark:border-gray-800">
-              <p className="mb-3 text-xs font-medium text-gray-500 dark:text-gray-400">
+            <div className="border-t border-border pt-3">
+              <p className="mb-3 text-xs font-medium text-muted">
                 コメント{comments.length > 0 && `（${comments.length}）`}
               </p>
               {commentsLoading ? (
@@ -323,7 +323,7 @@ export default function PostDetailModal({
                       {(repliesByParent.get(c.id) ?? []).map((r) => (
                         <div
                           key={r.id}
-                          className="ml-9 mt-3 border-l-2 border-gray-100 pl-3 dark:border-gray-800"
+                          className="ml-9 mt-3 border-l-2 border-border pl-3"
                         >
                           <CommentRow
                             comment={r}
@@ -340,7 +340,7 @@ export default function PostDetailModal({
             </div>
           </div>
 
-          <div className="shrink-0 border-t border-gray-100 px-4 py-3 dark:border-gray-800">
+          <div className="shrink-0 border-t border-border px-4 py-3">
             {replyTarget && (
               <div className="mb-2 flex items-center justify-between rounded-md bg-gray-50 px-2.5 py-1.5 text-xs text-gray-500 dark:bg-gray-800 dark:text-gray-400">
                 <span>{replyTarget.username} さんに返信</span>
@@ -363,7 +363,7 @@ export default function PostDetailModal({
                   maxLength={200}
                   rows={2}
                   placeholder={user ? "コメントを追加..." : "ログインするとコメントできます"}
-                  className="w-full resize-none rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none focus:border-pink-400 dark:border-gray-700 dark:text-gray-100"
+                  className="w-full resize-none rounded-lg border border-gray-300 px-3 py-2 text-sm text-foreground outline-none focus:border-accent dark:border-gray-700"
                 />
                 <p className="mt-0.5 text-right text-[11px] text-gray-400 dark:text-gray-500">
                   {commentBody.length}/200
@@ -373,7 +373,7 @@ export default function PostDetailModal({
                 type="button"
                 onClick={handleAddComment}
                 disabled={!canSubmitComment}
-                className="shrink-0 rounded-full bg-pink-600 px-3 py-2 text-xs font-medium text-white transition hover:bg-pink-700 disabled:cursor-not-allowed disabled:opacity-50"
+                className="shrink-0 rounded-full bg-accent px-3 py-2 text-xs font-medium text-accent-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 送信
               </button>
@@ -417,30 +417,30 @@ function CommentRow({
       <div className="min-w-0 flex-1">
         {profileHref ? (
           <Link href={profileHref} className="inline-block">
-            <p className="text-xs font-medium text-gray-800 hover:underline dark:text-gray-200">
+            <p className="text-xs font-medium text-foreground hover:underline">
               {comment.username}
             </p>
           </Link>
         ) : (
-          <p className="text-xs font-medium text-gray-800 dark:text-gray-200">{comment.username}</p>
+          <p className="text-xs font-medium text-foreground">{comment.username}</p>
         )}
         <ExpandableText
           text={comment.body}
-          className="whitespace-pre-wrap break-words text-sm leading-relaxed text-gray-700 dark:text-gray-300"
-          buttonClassName="mt-0.5 text-[11px] font-medium text-gray-400 transition hover:text-pink-500 dark:text-gray-500"
+          className="whitespace-pre-wrap break-words text-sm leading-relaxed text-muted"
+          buttonClassName="mt-0.5 text-[11px] font-medium text-gray-400 transition hover:text-accent dark:text-gray-500"
         />
         <div className="mt-1 flex items-center gap-3">
           <button
             type="button"
             onClick={onReply}
-            className="text-[11px] font-medium text-gray-400 transition hover:text-pink-500 dark:text-gray-500"
+            className="text-[11px] font-medium text-gray-400 transition hover:text-accent dark:text-gray-500"
           >
             返信
           </button>
           {user && comment.userId && comment.userId !== user.id && (
             <Link
               href={`/chat/${comment.userId}?username=${encodeURIComponent(comment.username)}`}
-              className="text-[11px] font-medium text-gray-400 transition hover:text-pink-500 dark:text-gray-500"
+              className="text-[11px] font-medium text-gray-400 transition hover:text-accent dark:text-gray-500"
             >
               メッセージ
             </Link>

@@ -30,12 +30,12 @@ export default function EmojiPickerButton({ onSelect }: { onSelect: (emoji: stri
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-label="絵文字を追加"
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-gray-400 transition hover:bg-gray-100 hover:text-accent dark:hover:bg-gray-800"
       >
         <Smile size={20} />
       </button>
       {open && (
-        <div className="absolute bottom-11 left-0 z-10 grid w-64 grid-cols-6 gap-1 rounded-2xl border border-gray-200 bg-white p-2 shadow-lg dark:border-gray-700 dark:bg-gray-900">
+        <div className="absolute bottom-11 left-0 z-10 grid w-64 grid-cols-6 gap-1 rounded-2xl border border-border bg-card p-2 shadow-lg">
           {EMOJIS.map((emoji) => (
             <button
               key={emoji}

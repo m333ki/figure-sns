@@ -16,17 +16,17 @@ export default function SavedPage() {
 
   return (
     <div className="mx-auto w-full px-4 py-6">
-      <h1 className="mb-4 text-xl font-bold text-gray-900 dark:text-gray-100">保存済み</h1>
+      <h1 className="mb-4 text-xl font-bold text-foreground">保存済み</h1>
 
       {loading ? (
-        <p className="py-12 text-center text-sm text-gray-400 dark:text-gray-500">読み込み中...</p>
+        <p className="py-12 text-center text-sm text-muted">読み込み中...</p>
       ) : error ? (
         <div className="py-12 text-center text-sm text-red-500 dark:text-red-400">
           <p>{error}</p>
           <button
             type="button"
             onClick={refresh}
-            className="mt-3 rounded-full border border-gray-300 px-4 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+            className="mt-3 rounded-full border border-border px-4 py-1.5 text-xs font-medium text-muted transition hover:bg-gray-50 dark:hover:bg-gray-800"
           >
             再読み込み
           </button>
@@ -34,7 +34,7 @@ export default function SavedPage() {
       ) : savedPosts.length === 0 ? (
         <div className="flex flex-col items-center px-4 py-24 text-center">
           <Bookmark size={40} className="mb-4 text-gray-300 dark:text-gray-700" />
-          <p className="text-sm text-gray-400 dark:text-gray-500">
+          <p className="text-sm text-muted">
             保存した投稿はまだありません
           </p>
         </div>

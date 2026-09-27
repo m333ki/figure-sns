@@ -49,8 +49,8 @@ export default function FollowButton({
       aria-pressed={isFollowing}
       className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-60 ${
         isFollowing
-          ? "border border-gray-300 text-gray-700 hover:border-red-300 hover:bg-red-50 hover:text-red-600 dark:border-gray-700 dark:text-gray-300 dark:hover:border-red-900 dark:hover:bg-red-950/30 dark:hover:text-red-400"
-          : "bg-pink-600 text-white hover:bg-pink-700"
+          ? "border border-gray-300 text-muted hover:border-red-300 hover:bg-red-50 hover:text-red-600 dark:border-gray-700 dark:hover:border-red-900 dark:hover:bg-red-950/30 dark:hover:text-red-400"
+          : "bg-accent text-accent-foreground hover:opacity-90"
       }`}
     >
       {isFollowing ? "フォロー中" : "フォローする"}

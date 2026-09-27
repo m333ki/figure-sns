@@ -52,17 +52,17 @@ export default function FollowListModal({
         aria-modal="true"
         aria-label={mode === "followers" ? "フォロワー" : "フォロー中"}
         onClick={(e) => e.stopPropagation()}
-        className="flex max-h-[75vh] w-full max-w-sm flex-col overflow-hidden rounded-2xl bg-white shadow-xl dark:bg-gray-900"
+        className="flex max-h-[75vh] w-full max-w-sm flex-col overflow-hidden rounded-2xl bg-card shadow-xl"
       >
-        <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3 dark:border-gray-800">
-          <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+        <div className="flex items-center justify-between border-b border-border px-4 py-3">
+          <h2 className="text-sm font-semibold text-foreground">
             {mode === "followers" ? "フォロワー" : "フォロー中"}
           </h2>
           <button
             type="button"
             onClick={onClose}
             aria-label="閉じる"
-            className="flex h-7 w-7 items-center justify-center rounded-full text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+            className="flex h-7 w-7 items-center justify-center rounded-full text-muted transition hover:bg-gray-100 dark:hover:bg-gray-800"
           >
             <X size={16} />
           </button>
@@ -74,11 +74,11 @@ export default function FollowListModal({
               {error}
             </p>
           ) : profiles === null ? (
-            <p className="px-4 py-8 text-center text-sm text-gray-400 dark:text-gray-500">
+            <p className="px-4 py-8 text-center text-sm text-muted">
               読み込み中...
             </p>
           ) : profiles.length === 0 ? (
-            <p className="px-4 py-8 text-center text-sm text-gray-400 dark:text-gray-500">
+            <p className="px-4 py-8 text-center text-sm text-muted">
               {mode === "followers" ? "フォロワーはまだいません" : "誰もフォローしていません"}
             </p>
           ) : (
@@ -94,10 +94,10 @@ export default function FollowListModal({
                       <UserAvatar src={profile.avatarUrl} alt={profile.username} />
                     </div>
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">
+                      <p className="truncate text-sm font-medium text-foreground">
                         {profile.displayName}
                       </p>
-                      <p className="truncate text-xs text-gray-400 dark:text-gray-500">
+                      <p className="truncate text-xs text-muted">
                         @{profile.username}
                       </p>
                     </div>

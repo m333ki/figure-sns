@@ -71,7 +71,7 @@ export default function PostImageCarousel({
   return (
     <div
       className={`relative w-full overflow-hidden ${
-        aspectMode === "auto" ? "bg-gray-100 dark:bg-gray-800" : ""
+        aspectMode === "auto" ? "bg-card" : ""
       } ${className}`}
       style={
         aspectMode === "auto"

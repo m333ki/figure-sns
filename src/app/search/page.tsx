@@ -146,7 +146,7 @@ function SearchPageInner() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="フィギュア名・メーカー名・ハッシュタグで検索"
-          className="w-full rounded-full border border-gray-200 bg-white py-2 pl-9 pr-9 text-sm text-gray-900 outline-none transition focus:border-pink-400 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+          className="w-full rounded-full border border-border bg-card py-2 pl-9 pr-9 text-sm text-foreground outline-none transition focus:border-accent"
         />
         {query && (
           <button
@@ -160,7 +160,7 @@ function SearchPageInner() {
         )}
       </div>
 
-      <div className="mb-4 flex border-b border-gray-200 dark:border-gray-800">
+      <div className="mb-4 flex border-b border-border">
         <SearchTabButton label="話題" isActive={activeTab === "top"} onClick={() => setActiveTab("top")} />
         <SearchTabButton label="最新" isActive={activeTab === "latest"} onClick={() => setActiveTab("latest")} />
         <SearchTabButton label="ユーザー" isActive={activeTab === "users"} onClick={() => setActiveTab("users")} />
@@ -174,10 +174,10 @@ function SearchPageInner() {
       {(activeTab === "top" || activeTab === "latest") && (
         <>
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400">
+            <h2 className="text-sm font-semibold text-muted">
               {trimmedQuery ? `検索結果（${postsForActiveTab.length}件）` : "投稿一覧"}
             </h2>
-            <div className="flex shrink-0 gap-1 rounded-full border border-gray-200 p-0.5 dark:border-gray-700">
+            <div className="flex shrink-0 gap-1 rounded-full border border-border p-0.5">
               <button
                 type="button"
                 onClick={() => setLayoutMode("grid")}
@@ -185,7 +185,7 @@ function SearchPageInner() {
                 aria-pressed={layoutMode === "grid"}
                 className={`flex h-7 w-7 items-center justify-center rounded-full transition ${
                   layoutMode === "grid"
-                    ? "bg-pink-600 text-white"
+                    ? "bg-accent text-accent-foreground"
                     : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
                 }`}
               >
@@ -198,7 +198,7 @@ function SearchPageInner() {
                 aria-pressed={layoutMode === "timeline"}
                 className={`flex h-7 w-7 items-center justify-center rounded-full transition ${
                   layoutMode === "timeline"
-                    ? "bg-pink-600 text-white"
+                    ? "bg-accent text-accent-foreground"
                     : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
                 }`}
               >
@@ -208,7 +208,7 @@ function SearchPageInner() {
           </div>
 
           {loading ? (
-            <p className="py-12 text-center text-sm text-gray-400 dark:text-gray-500">
+            <p className="py-12 text-center text-sm text-muted">
               読み込み中...
             </p>
           ) : error ? (
@@ -217,13 +217,13 @@ function SearchPageInner() {
               <button
                 type="button"
                 onClick={refresh}
-                className="mt-3 rounded-full border border-gray-300 px-4 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+                className="mt-3 rounded-full border border-border px-4 py-1.5 text-xs font-medium text-muted transition hover:bg-gray-50 dark:hover:bg-gray-800"
               >
                 再読み込み
               </button>
             </div>
           ) : postsForActiveTab.length === 0 ? (
-            <p className="py-12 text-center text-sm text-gray-400 dark:text-gray-500">
+            <p className="py-12 text-center text-sm text-muted">
               該当する投稿が見つかりませんでした
             </p>
           ) : layoutMode === "grid" ? (
@@ -273,17 +273,17 @@ function SearchPageInner() {
       {activeTab === "users" && (
         <div>
           {!normalizedQuery ? (
-            <p className="py-12 text-center text-sm text-gray-400 dark:text-gray-500">
+            <p className="py-12 text-center text-sm text-muted">
               ユーザー名を入力して検索してください
             </p>
           ) : usersLoading ? (
-            <p className="py-12 text-center text-sm text-gray-400 dark:text-gray-500">
+            <p className="py-12 text-center text-sm text-muted">
               読み込み中...
             </p>
           ) : usersError ? (
             <p className="py-12 text-center text-sm text-red-500 dark:text-red-400">{usersError}</p>
           ) : visibleUserResults.length === 0 ? (
-            <p className="py-12 text-center text-sm text-gray-400 dark:text-gray-500">
+            <p className="py-12 text-center text-sm text-muted">
               該当するユーザーが見つかりませんでした
             </p>
           ) : (
@@ -302,14 +302,14 @@ function SearchPageInner() {
                       <UserAvatar src={profile.avatarUrl} alt={profile.username} />
                     </div>
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-gray-900 dark:text-gray-100">
+                      <p className="truncate text-sm font-semibold text-foreground">
                         {profile.displayName}
                       </p>
-                      <p className="truncate text-xs text-gray-500 dark:text-gray-400">
+                      <p className="truncate text-xs text-muted">
                         @{profile.username}
                       </p>
                       {profile.bio && (
-                        <p className="mt-0.5 truncate text-xs text-gray-400 dark:text-gray-500">
+                        <p className="mt-0.5 truncate text-xs text-muted">
                           {profile.bio}
                         </p>
                       )}
@@ -325,24 +325,24 @@ function SearchPageInner() {
       {activeTab === "displays" && (
         <div>
           {!user ? (
-            <p className="py-12 text-center text-sm text-gray-400 dark:text-gray-500">
+            <p className="py-12 text-center text-sm text-muted">
               ログインすると自分のMyデトルフを検索できます
             </p>
           ) : !normalizedQuery ? (
-            <p className="py-12 text-center text-sm text-gray-400 dark:text-gray-500">
+            <p className="py-12 text-center text-sm text-muted">
               検索キーワードを入力すると、Myデトルフ内の一致するフィギュアを表示します
             </p>
           ) : shelf === null ? (
-            <p className="py-12 text-center text-sm text-gray-400 dark:text-gray-500">
+            <p className="py-12 text-center text-sm text-muted">
               読み込み中...
             </p>
           ) : matchedShelfItems.length === 0 ? (
-            <p className="py-12 text-center text-sm text-gray-400 dark:text-gray-500">
+            <p className="py-12 text-center text-sm text-muted">
               自分のMyデトルフに一致するフィギュアが見つかりませんでした
             </p>
           ) : (
             <div>
-              <p className="mb-3 text-sm font-semibold text-gray-500 dark:text-gray-400">
+              <p className="mb-3 text-sm font-semibold text-muted">
                 Myデトルフ内の一致（{matchedShelfItems.length}件）
               </p>
               <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
@@ -350,7 +350,7 @@ function SearchPageInner() {
                   <Link
                     key={item.id}
                     href="/mypage"
-                    className="group relative aspect-[3/4] overflow-hidden rounded-lg bg-gray-50 ring-2 ring-pink-500 transition hover:ring-pink-400 dark:bg-gray-900"
+                    className="group relative aspect-[3/4] overflow-hidden rounded-lg bg-gray-50 ring-2 ring-accent transition hover:ring-accent/70 dark:bg-gray-900"
                   >
                     <Image
                       src={item.backgroundRemoved ? item.imageUrl : (item.originalImageUrl ?? item.imageUrl)}
@@ -405,8 +405,8 @@ function SearchTabButton({
       onClick={onClick}
       className={`flex-1 border-b-2 px-2 py-3 text-center text-sm font-medium transition ${
         isActive
-          ? "border-pink-600 text-pink-600 dark:text-pink-400"
-          : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+          ? "border-accent text-accent"
+          : "border-transparent text-muted hover:text-foreground"
       }`}
     >
       {label}

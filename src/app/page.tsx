@@ -27,24 +27,24 @@ export default function TimelinePage() {
     <div className="mx-auto w-full px-4 py-6">
       {isBackgroundRefreshing && (
         <div className="flex justify-center py-3">
-          <Loader2 size={20} className="animate-spin text-pink-500" />
+          <Loader2 size={20} className="animate-spin text-accent" />
         </div>
       )}
       {isInitialLoad ? (
-        <p className="py-12 text-center text-sm text-gray-400 dark:text-gray-500">読み込み中...</p>
+        <p className="py-12 text-center text-sm text-muted">読み込み中...</p>
       ) : error && posts.length === 0 ? (
         <div className="py-12 text-center text-sm text-red-500 dark:text-red-400">
           <p>{error}</p>
           <button
             type="button"
             onClick={refresh}
-            className="mt-3 rounded-full border border-gray-300 px-4 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+            className="mt-3 rounded-full border border-border px-4 py-1.5 text-xs font-medium text-muted transition hover:bg-gray-50 dark:hover:bg-gray-800"
           >
             再読み込み
           </button>
         </div>
       ) : posts.length === 0 ? (
-        <p className="py-12 text-center text-sm text-gray-400 dark:text-gray-500">まだ投稿がありません</p>
+        <p className="py-12 text-center text-sm text-muted">まだ投稿がありません</p>
       ) : (
         <div className="flex flex-col gap-4">
           {posts.map((post, index) => (

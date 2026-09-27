@@ -1,4 +1,4 @@
-import { Bell, Bookmark, Home, MessageCircle, Search, User } from "lucide-react";
+import { Bell, Bookmark, Flame, Home, MessageCircle, Search, User } from "lucide-react";
 
 export type NavBadgeKey = "notifications" | "chat";
 
@@ -11,10 +11,20 @@ export const NAV_ITEMS = [
   { href: "/mypage", label: "プロフィール", icon: User, badgeKey: undefined },
 ] as const satisfies { href: string; label: string; icon: unknown; badgeKey: NavBadgeKey | undefined }[];
 
+// Mobile swaps out 通知 for トレンド (通知 moves up into MobileHeader instead,
+// next to the account icon) -- kept as its own list rather than derived from
+// NAV_ITEMS indices since desktop's Sidebar still wants 通知 in its list.
+const TRENDING_ITEM = {
+  href: "/trending",
+  label: "トレンド",
+  icon: Flame,
+  badgeKey: undefined,
+} as const satisfies { href: string; label: string; icon: unknown; badgeKey: NavBadgeKey | undefined };
+
 export const MOBILE_NAV_ITEMS = [
   NAV_ITEMS[0],
   NAV_ITEMS[1],
-  NAV_ITEMS[2],
+  TRENDING_ITEM,
   NAV_ITEMS[3],
   NAV_ITEMS[5],
 ] as const;

@@ -23,7 +23,7 @@ export default function Sidebar() {
       <div>
         <Link
           href="/"
-          className="mb-2 block rounded-full px-3 py-2 text-xl font-bold tracking-tight text-pink-600 transition hover:bg-gray-100 dark:text-pink-400 dark:hover:bg-gray-800"
+          className="mb-2 block rounded-full px-3 py-2 text-xl font-bold tracking-tight text-accent transition hover:bg-gray-100 dark:hover:bg-gray-800"
         >
           FigStagram
         </Link>
@@ -48,8 +48,8 @@ export default function Sidebar() {
                 }
                 className={`flex items-center gap-3.5 rounded-full px-3 py-2.5 text-[15px] transition ${
                   active
-                    ? "bg-gray-100 font-bold text-gray-900 dark:bg-gray-800 dark:text-gray-100"
-                    : "font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                    ? "bg-gray-100 font-bold text-foreground dark:bg-gray-800"
+                    : "font-medium text-muted hover:bg-gray-100 dark:hover:bg-gray-800"
                 }`}
               >
                 <span className="relative">
@@ -68,7 +68,7 @@ export default function Sidebar() {
         <button
           type="button"
           onClick={user ? open : promptLogin}
-          className="flex w-full items-center justify-center gap-2 rounded-full bg-pink-600 py-2.5 text-[15px] font-semibold text-white shadow-sm transition hover:bg-pink-700 hover:shadow"
+          className="flex w-full items-center justify-center gap-2 rounded-full bg-accent py-2.5 text-[15px] font-semibold text-accent-foreground shadow-sm transition hover:opacity-90 hover:shadow"
         >
           <SquarePen size={17} />
           投稿する

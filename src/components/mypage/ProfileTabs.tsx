@@ -33,7 +33,7 @@ export default function ProfileTabs() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-4">
-      <div className="flex border-b border-gray-200 dark:border-gray-800">
+      <div className="flex border-b border-border">
         <TabButton
           label="My デトルフ（コレクション棚）"
           isActive={activeTab === "shelf"}
@@ -50,11 +50,11 @@ export default function ProfileTabs() {
         {activeTab === "shelf" ? (
           <DisplayShelf />
         ) : !user ? (
-          <p className="py-12 text-center text-sm text-gray-400 dark:text-gray-500">
+          <p className="py-12 text-center text-sm text-muted">
             ログインすると自分の投稿が表示されます
           </p>
         ) : sortedPosts.length === 0 ? (
-          <p className="py-12 text-center text-sm text-gray-400 dark:text-gray-500">
+          <p className="py-12 text-center text-sm text-muted">
             まだ投稿がありません
           </p>
         ) : (
@@ -103,8 +103,8 @@ function TabButton({
       onClick={onClick}
       className={`flex-1 border-b-2 px-3 py-3 text-center text-sm font-medium transition ${
         isActive
-          ? "border-pink-600 text-pink-600 dark:text-pink-400"
-          : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+          ? "border-accent text-accent"
+          : "border-transparent text-muted hover:text-foreground"
       }`}
     >
       {label}

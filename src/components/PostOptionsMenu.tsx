@@ -75,7 +75,7 @@ export default function PostOptionsMenu({
           />
           <div
             role="menu"
-            className="absolute right-0 top-full z-20 mt-1 w-40 overflow-hidden rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-800"
+            className="absolute right-0 top-full z-20 mt-1 w-40 overflow-hidden rounded-lg border border-border bg-card py-1 shadow-lg"
             onClick={(e) => e.stopPropagation()}
           >
             {canDelete && (
@@ -84,7 +84,7 @@ export default function PostOptionsMenu({
                 role="menuitem"
                 onClick={handleDelete}
                 disabled={deleting}
-                className="block w-full px-3 py-2 text-left text-sm text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:text-gray-300 dark:hover:bg-gray-700"
+                className="block w-full px-3 py-2 text-left text-sm text-muted transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-gray-700"
               >
                 {deleting ? "削除中..." : "投稿を削除する"}
               </button>

@@ -302,17 +302,17 @@ export default function FigureFormModal({
         aria-modal="true"
         aria-label={existing ? "フィギュアを編集" : "フィギュアを追加"}
         onClick={(e) => e.stopPropagation()}
-        className="flex max-h-[85vh] w-full max-w-sm flex-col overflow-hidden rounded-2xl bg-white shadow-xl dark:bg-gray-900"
+        className="flex max-h-[85vh] w-full max-w-sm flex-col overflow-hidden rounded-2xl bg-card shadow-xl"
       >
-        <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3 dark:border-gray-800">
-          <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+        <div className="flex items-center justify-between border-b border-border px-4 py-3">
+          <h2 className="text-sm font-semibold text-foreground">
             {existing ? "フィギュアを編集" : "フィギュアを追加"}
           </h2>
           <button
             type="button"
             onClick={onClose}
             aria-label="閉じる"
-            className="flex h-7 w-7 items-center justify-center rounded-full text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+            className="flex h-7 w-7 items-center justify-center rounded-full text-muted transition hover:bg-gray-100 dark:hover:bg-gray-800"
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
@@ -321,7 +321,7 @@ export default function FigureFormModal({
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto p-4">
-          <p className="mb-2 text-xs font-medium text-gray-500 dark:text-gray-400">写真</p>
+          <p className="mb-2 text-xs font-medium text-muted">写真</p>
           {previewUrl ? (
             <div
               ref={previewBoxRef}
@@ -329,7 +329,7 @@ export default function FigureFormModal({
               onPointerMove={handlePreviewPointerMove}
               onPointerUp={handlePreviewPointerUp}
               onPointerCancel={handlePreviewPointerUp}
-              className="relative mb-1.5 flex aspect-[3/4] w-28 touch-none items-center justify-center overflow-hidden rounded-lg border border-gray-300 text-gray-400 dark:border-gray-700 dark:text-gray-500"
+              className="relative mb-1.5 flex aspect-[3/4] w-28 touch-none items-center justify-center overflow-hidden rounded-lg border border-border text-muted"
               style={{ cursor: processingImage ? "default" : "grab" }}
             >
               <Image
@@ -365,13 +365,13 @@ export default function FigureFormModal({
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={processingImage}
-              className="relative mb-1.5 flex aspect-[3/4] w-28 items-center justify-center overflow-hidden rounded-lg border border-dashed border-gray-300 text-gray-400 transition hover:border-pink-300 hover:text-pink-500 disabled:cursor-not-allowed dark:border-gray-700 dark:text-gray-500"
+              className="relative mb-1.5 flex aspect-[3/4] w-28 items-center justify-center overflow-hidden rounded-lg border border-dashed border-gray-300 text-gray-400 transition hover:border-accent hover:text-accent disabled:cursor-not-allowed dark:border-gray-700"
             >
               <Plus size={20} />
             </button>
           )}
           {previewUrl && (
-            <p className="mb-1.5 text-[11px] text-gray-400 dark:text-gray-500">
+            <p className="mb-1.5 text-[11px] text-muted">
               ドラッグして位置を調整できます
             </p>
           )}
@@ -396,7 +396,7 @@ export default function FigureFormModal({
                 <button
                   type="button"
                   onClick={handleRemoveBackgroundClick}
-                  className="flex items-center gap-1.5 rounded-full border border-pink-300 px-3 py-1.5 text-xs font-medium text-pink-600 transition hover:bg-pink-50 dark:border-pink-800 dark:text-pink-400 dark:hover:bg-pink-950/30"
+                  className="flex items-center gap-1.5 rounded-full border border-accent px-3 py-1.5 text-xs font-medium text-accent transition hover:bg-accent/10"
                 >
                   <Wand2 size={14} />
                   背景を透過する
@@ -417,7 +417,7 @@ export default function FigureFormModal({
 
           {originalPreviewUrl && transparentPreviewUrl && (
             <div className="mb-4 flex items-center justify-between gap-2">
-              <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+              <span className="text-xs font-medium text-muted">
                 透過済みの画像を使う
               </span>
               <button
@@ -428,7 +428,7 @@ export default function FigureFormModal({
                 onClick={handleToggleBackground}
                 disabled={!canToggleBackground}
                 className={`relative h-6 w-11 shrink-0 rounded-full transition disabled:cursor-not-allowed disabled:opacity-40 ${
-                  backgroundRemoved ? "bg-pink-600" : "bg-gray-300 dark:bg-gray-600"
+                  backgroundRemoved ? "bg-accent" : "bg-gray-300 dark:bg-gray-600"
                 }`}
               >
                 <span
@@ -443,7 +443,7 @@ export default function FigureFormModal({
           {previewUrl && (
             <>
               <label
-                className="mb-1 flex items-center justify-between text-xs font-medium text-gray-500 dark:text-gray-400"
+                className="mb-1 flex items-center justify-between text-xs font-medium text-muted"
                 htmlFor="shelf-fig-scale"
               >
                 <span>表示サイズ（棚での大きさ）</span>
@@ -457,12 +457,12 @@ export default function FigureFormModal({
                 step={0.05}
                 value={displayScale}
                 onChange={(e) => setDisplayScale(Number(e.target.value))}
-                className="mb-4 w-full accent-pink-600"
+                className="mb-4 w-full accent-accent"
               />
             </>
           )}
 
-          <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400" htmlFor="shelf-fig-name">
+          <label className="mb-1 block text-xs font-medium text-muted" htmlFor="shelf-fig-name">
             フィギュア名（任意）
           </label>
           <input
@@ -472,10 +472,10 @@ export default function FigureFormModal({
             onChange={(e) => setFigureName(e.target.value)}
             maxLength={100}
             placeholder="例: 初音ミク Birthday 2023 Ver."
-            className="mb-4 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none focus:border-pink-400 dark:border-gray-700 dark:text-gray-100"
+            className="mb-4 w-full rounded-lg border border-border px-3 py-2 text-sm text-foreground outline-none focus:border-accent"
           />
 
-          <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400" htmlFor="shelf-fig-maker">
+          <label className="mb-1 block text-xs font-medium text-muted" htmlFor="shelf-fig-maker">
             メーカー名（任意）
           </label>
           <input
@@ -485,10 +485,10 @@ export default function FigureFormModal({
             onChange={(e) => setMakerName(e.target.value)}
             maxLength={100}
             placeholder="例: グッドスマイルカンパニー"
-            className="mb-4 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none focus:border-pink-400 dark:border-gray-700 dark:text-gray-100"
+            className="mb-4 w-full rounded-lg border border-border px-3 py-2 text-sm text-foreground outline-none focus:border-accent"
           />
 
-          <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400" htmlFor="shelf-fig-price">
+          <label className="mb-1 block text-xs font-medium text-muted" htmlFor="shelf-fig-price">
             金額（任意）
           </label>
           <input
@@ -499,10 +499,10 @@ export default function FigureFormModal({
             value={price}
             onChange={(e) => setPrice(e.target.value)}
             placeholder="例: 16800"
-            className="mb-4 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none focus:border-pink-400 dark:border-gray-700 dark:text-gray-100"
+            className="mb-4 w-full rounded-lg border border-border px-3 py-2 text-sm text-foreground outline-none focus:border-accent"
           />
 
-          <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400" htmlFor="shelf-fig-desc">
+          <label className="mb-1 block text-xs font-medium text-muted" htmlFor="shelf-fig-desc">
             説明（任意）
           </label>
           <textarea
@@ -512,7 +512,7 @@ export default function FigureFormModal({
             maxLength={200}
             rows={3}
             placeholder="購入の思い出やこだわりなど"
-            className="w-full resize-none rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none focus:border-pink-400 dark:border-gray-700 dark:text-gray-100"
+            className="w-full resize-none rounded-lg border border-border px-3 py-2 text-sm text-foreground outline-none focus:border-accent"
           />
 
           {errorMessage && (
@@ -520,7 +520,7 @@ export default function FigureFormModal({
           )}
         </div>
 
-        <div className="flex gap-2 border-t border-gray-100 px-4 py-3 dark:border-gray-800">
+        <div className="flex gap-2 border-t border-border px-4 py-3">
           {existing && (
             <button
               type="button"
@@ -534,7 +534,7 @@ export default function FigureFormModal({
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 rounded-full border border-gray-300 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+            className="flex-1 rounded-full border border-gray-300 py-2 text-sm font-medium text-muted transition hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
           >
             キャンセル
           </button>
@@ -542,7 +542,7 @@ export default function FigureFormModal({
             type="button"
             onClick={handleSubmit}
             disabled={!canSubmit}
-            className="flex-1 rounded-full bg-pink-600 py-2 text-sm font-medium text-white transition hover:bg-pink-700 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex-1 rounded-full bg-accent py-2 text-sm font-medium text-accent-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {processingImage ? "画像を処理中..." : submitting ? "保存中..." : "保存する"}
           </button>

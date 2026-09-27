@@ -54,7 +54,7 @@ export default function MyPage() {
 
   if (!authLoading && !user) {
     return (
-      <p className="py-24 text-center text-sm text-gray-400 dark:text-gray-500">
+      <p className="py-24 text-center text-sm text-muted">
         ログインが必要です
       </p>
     );
@@ -62,7 +62,7 @@ export default function MyPage() {
 
   if (authLoading || loading || !user) {
     return (
-      <p className="py-24 text-center text-sm text-gray-400 dark:text-gray-500">
+      <p className="py-24 text-center text-sm text-muted">
         読み込み中...
       </p>
     );

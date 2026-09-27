@@ -104,15 +104,15 @@ export default function PostComposerModal({ onClose }: { onClose: () => void }) 
         aria-modal="true"
         aria-label="投稿する"
         onClick={(e) => e.stopPropagation()}
-        className="flex max-h-[85vh] w-full max-w-md flex-col overflow-hidden rounded-2xl bg-white shadow-xl dark:bg-gray-900"
+        className="flex max-h-[85vh] w-full max-w-md flex-col overflow-hidden rounded-2xl bg-card shadow-xl"
       >
-        <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3 dark:border-gray-800">
-          <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">投稿する</h2>
+        <div className="flex items-center justify-between border-b border-border px-4 py-3">
+          <h2 className="text-sm font-semibold text-foreground">投稿する</h2>
           <button
             type="button"
             onClick={onClose}
             aria-label="閉じる"
-            className="flex h-7 w-7 items-center justify-center rounded-full text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+            className="flex h-7 w-7 items-center justify-center rounded-full text-muted transition hover:bg-gray-100 dark:hover:bg-gray-800"
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
@@ -122,10 +122,10 @@ export default function PostComposerModal({ onClose }: { onClose: () => void }) 
 
         <div className="min-h-0 flex-1 overflow-y-auto p-4">
           <div className="mb-1 flex items-center justify-between">
-            <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
+            <p className="text-xs font-medium text-muted">
               画像（最大{MAX_POST_IMAGES}枚）
             </p>
-            <p className="text-[11px] text-gray-400 dark:text-gray-500">
+            <p className="text-[11px] text-muted">
               {images.length}/{MAX_POST_IMAGES}
             </p>
           </div>
@@ -134,7 +134,7 @@ export default function PostComposerModal({ onClose }: { onClose: () => void }) 
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="flex h-56 w-full flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-gray-300 text-gray-400 transition hover:border-pink-300 hover:text-pink-500 dark:border-gray-700 dark:text-gray-500"
+                className="flex h-56 w-full flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-gray-300 text-gray-400 transition hover:border-accent hover:text-accent dark:border-gray-700"
               >
                 <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -196,7 +196,7 @@ export default function PostComposerModal({ onClose }: { onClose: () => void }) 
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     aria-label="画像を追加"
-                    className="flex aspect-square items-center justify-center rounded-lg border border-dashed border-gray-300 text-gray-400 transition hover:border-pink-300 hover:text-pink-500 dark:border-gray-700 dark:text-gray-500"
+                    className="flex aspect-square items-center justify-center rounded-lg border border-dashed border-gray-300 text-gray-400 transition hover:border-accent hover:text-accent dark:border-gray-700"
                   >
                     <Plus size={22} />
                   </button>
@@ -211,12 +211,12 @@ export default function PostComposerModal({ onClose }: { onClose: () => void }) 
               onChange={handleFileChange}
               className="hidden"
             />
-            <p className="mt-2 text-[11px] leading-relaxed text-gray-400 dark:text-gray-500">
+            <p className="mt-2 text-[11px] leading-relaxed text-muted">
               ※自分で撮影した写真のみ投稿してください（公式画像の無断転載禁止）
             </p>
           </div>
 
-          <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400" htmlFor="post-figure-name">
+          <label className="mb-1 block text-xs font-medium text-muted" htmlFor="post-figure-name">
             フィギュア名（任意）
           </label>
           <input
@@ -226,10 +226,10 @@ export default function PostComposerModal({ onClose }: { onClose: () => void }) 
             onChange={(e) => setFigureName(e.target.value)}
             maxLength={100}
             placeholder="例: 初音ミク Birthday 2023 Ver."
-            className="mb-4 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none focus:border-pink-400 dark:border-gray-700 dark:text-gray-100"
+            className="mb-4 w-full rounded-lg border border-border px-3 py-2 text-sm text-foreground outline-none focus:border-accent"
           />
 
-          <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400" htmlFor="post-maker-name">
+          <label className="mb-1 block text-xs font-medium text-muted" htmlFor="post-maker-name">
             メーカー名（任意）
           </label>
           <input
@@ -239,10 +239,10 @@ export default function PostComposerModal({ onClose }: { onClose: () => void }) 
             onChange={(e) => setMakerName(e.target.value)}
             maxLength={100}
             placeholder="例: グッドスマイルカンパニー"
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none focus:border-pink-400 dark:border-gray-700 dark:text-gray-100"
+            className="w-full rounded-lg border border-border px-3 py-2 text-sm text-foreground outline-none focus:border-accent"
           />
 
-          <label className="mb-1 mt-4 block text-xs font-medium text-gray-500 dark:text-gray-400" htmlFor="post-caption">
+          <label className="mb-1 mt-4 block text-xs font-medium text-muted" htmlFor="post-caption">
             キャプション（任意）
           </label>
           <textarea
@@ -252,18 +252,18 @@ export default function PostComposerModal({ onClose }: { onClose: () => void }) 
             maxLength={200}
             rows={3}
             placeholder="コメントを添えて投稿しよう"
-            className="w-full resize-none rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none focus:border-pink-400 dark:border-gray-700 dark:text-gray-100"
+            className="w-full resize-none rounded-lg border border-border px-3 py-2 text-sm text-foreground outline-none focus:border-accent"
           />
-          <p className="mt-1 text-right text-[11px] text-gray-400 dark:text-gray-500">{caption.length}/200</p>
+          <p className="mt-1 text-right text-[11px] text-muted">{caption.length}/200</p>
 
           {errorMessage && <p className="mt-3 text-xs text-red-600 dark:text-red-400">{errorMessage}</p>}
         </div>
 
-        <div className="flex gap-2 border-t border-gray-100 px-4 py-3 dark:border-gray-800">
+        <div className="flex gap-2 border-t border-border px-4 py-3">
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 rounded-full border border-gray-300 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+            className="flex-1 rounded-full border border-gray-300 py-2 text-sm font-medium text-muted transition hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
           >
             キャンセル
           </button>
@@ -271,7 +271,7 @@ export default function PostComposerModal({ onClose }: { onClose: () => void }) 
             type="button"
             onClick={handleSubmit}
             disabled={!canSubmit}
-            className="flex-1 rounded-full bg-pink-600 py-2 text-sm font-medium text-white transition hover:bg-pink-700 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex-1 rounded-full bg-accent py-2 text-sm font-medium text-accent-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {submitting ? "投稿中..." : "投稿する"}
           </button>

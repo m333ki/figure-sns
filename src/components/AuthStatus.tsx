@@ -16,8 +16,8 @@ export default function AuthStatus({ compact = false }: { compact?: boolean }) {
         onClick={promptLogin}
         className={
           compact
-            ? "rounded-full border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
-            : "mb-3 flex w-full items-center justify-center gap-1.5 rounded-full border border-gray-300 py-2.5 text-[15px] font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+            ? "rounded-full border border-gray-300 px-3 py-1.5 text-xs font-medium text-muted transition hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
+            : "mb-3 flex w-full items-center justify-center gap-1.5 rounded-full border border-gray-300 py-2.5 text-[15px] font-medium text-muted transition hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
         }
       >
         ログイン / 登録
@@ -35,7 +35,7 @@ export default function AuthStatus({ compact = false }: { compact?: boolean }) {
         aria-label="アカウントメニュー"
         className={
           compact
-            ? "flex h-9 w-9 items-center justify-center rounded-full bg-pink-100 text-sm font-semibold text-pink-700 transition hover:bg-pink-200 dark:bg-pink-900/40 dark:text-pink-300"
+            ? "flex h-9 w-9 items-center justify-center rounded-full bg-accent/15 text-sm font-semibold text-accent transition hover:bg-accent/25"
             : "flex w-full items-center gap-2.5 rounded-full px-3 py-2 text-left transition hover:bg-gray-100 dark:hover:bg-gray-800"
         }
       >
@@ -43,10 +43,10 @@ export default function AuthStatus({ compact = false }: { compact?: boolean }) {
           username?.[0]?.toUpperCase() ?? <UserIcon size={16} />
         ) : (
           <>
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-pink-100 text-sm font-semibold text-pink-700 dark:bg-pink-900/40 dark:text-pink-300">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent/15 text-sm font-semibold text-accent">
               {username?.[0]?.toUpperCase() ?? <UserIcon size={14} />}
             </span>
-            <span className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">
+            <span className="truncate text-sm font-medium text-foreground">
               {username}
             </span>
           </>
@@ -58,18 +58,18 @@ export default function AuthStatus({ compact = false }: { compact?: boolean }) {
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
           <div
             role="menu"
-            className={`absolute z-20 mt-1 w-44 overflow-hidden rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-800 ${
+            className={`absolute z-20 mt-1 w-44 overflow-hidden rounded-lg border border-border bg-card py-1 shadow-lg ${
               compact ? "right-0 top-full" : "bottom-full left-0 mb-1"
             }`}
           >
-            <div className="truncate border-b border-gray-100 px-3 py-2 text-xs text-gray-500 dark:border-gray-700 dark:text-gray-400">
+            <div className="truncate border-b border-border px-3 py-2 text-xs text-muted">
               {username}
             </div>
             <Link
               href="/mypage"
               role="menuitem"
               onClick={() => setOpen(false)}
-              className="block px-3 py-2 text-left text-sm text-gray-700 transition hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700"
+              className="block px-3 py-2 text-left text-sm text-muted transition hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               プロフィール
             </Link>

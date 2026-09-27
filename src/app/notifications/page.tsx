@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Heart, MessageCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ChevronLeft, Heart, MessageCircle } from "lucide-react";
 import { AppNotification } from "@/types";
 import { fetchNotifications, markAllNotificationsRead } from "@/lib/notifications";
 import { formatTimeAgo } from "@/lib/formatTimeAgo";
@@ -10,11 +11,12 @@ import { useNotifications } from "@/context/NotificationsContext";
 import PostDetailModal from "@/components/PostDetailModal";
 
 const ICONS = {
-  like: { Icon: Heart, className: "text-pink-500", filled: true },
+  like: { Icon: Heart, className: "text-like", filled: true },
   comment: { Icon: MessageCircle, className: "text-blue-500", filled: false },
 };
 
 export default function NotificationsPage() {
+  const router = useRouter();
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -47,18 +49,36 @@ export default function NotificationsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      router.back();
+    } else {
+      router.push("/");
+    }
+  };
+
   return (
     <div className="mx-auto w-full px-4 py-6">
-      <h1 className="mb-4 text-xl font-bold text-gray-900 dark:text-gray-100">通知</h1>
+      <div className="mb-4 flex items-center gap-1">
+        <button
+          type="button"
+          onClick={handleBack}
+          aria-label="戻る"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-muted transition hover:bg-gray-100 dark:hover:bg-gray-800"
+        >
+          <ChevronLeft size={20} />
+        </button>
+        <h1 className="text-xl font-bold text-foreground">通知</h1>
+      </div>
 
       {loading ? (
-        <p className="py-12 text-center text-sm text-gray-400 dark:text-gray-500">
+        <p className="py-12 text-center text-sm text-muted">
           読み込み中...
         </p>
       ) : error ? (
         <p className="py-12 text-center text-sm text-red-500 dark:text-red-400">{error}</p>
       ) : notifications.length === 0 ? (
-        <p className="py-12 text-center text-sm text-gray-400 dark:text-gray-500">
+        <p className="py-12 text-center text-sm text-muted">
           まだ通知はありません
         </p>
       ) : (
@@ -78,18 +98,18 @@ export default function NotificationsPage() {
                   fill={filled ? "currentColor" : "none"}
                 />
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm text-gray-800 dark:text-gray-200">
+                  <p className="text-sm text-foreground">
                     <span className="font-semibold">{n.actorUsername}</span>
                     {n.type === "like"
                       ? "があなたの投稿にいいねしました"
                       : `があなたの投稿にコメントしました：「${n.commentBody}」`}
                   </p>
-                  <p className="mt-0.5 text-xs text-gray-400 dark:text-gray-500">
+                  <p className="mt-0.5 text-xs text-muted">
                     {formatTimeAgo(n.createdAt)}
                   </p>
                 </div>
                 {!n.isRead && (
-                  <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-pink-500" />
+                  <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-accent" />
                 )}
               </button>
             );

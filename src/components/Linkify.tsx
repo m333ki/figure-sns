@@ -18,7 +18,7 @@ export default function Linkify({ text, isMine }: { text: string; isMine?: boole
             onClick={(e) => e.stopPropagation()}
             className={`underline underline-offset-2 ${
               isMine
-                ? "text-blue-100 hover:text-white"
+                ? "text-accent-foreground hover:opacity-70"
                 : "text-blue-600 hover:text-blue-700 dark:text-blue-400"
             }`}
           >

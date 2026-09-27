@@ -82,6 +82,10 @@ export default function ChatThreadPage() {
   const pendingReadIdsRef = useRef<Set<string>>(new Set());
   const markReadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const footerRef = useRef<HTMLDivElement>(null);
+  const [footerHeight, setFooterHeight] = useState(0);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [isFocused, setIsFocused] = useState(false);
 
   const fallbackUsername = searchParams.get("username") ?? "";
   const otherUsername =
@@ -187,11 +191,74 @@ export default function ChatThreadPage() {
   // that can walk up and nudge ancestor/document scroll position too, which
   // on mobile (with the keyboard open and the page's dvh height already in
   // flux) is what was leaving the whole thread visibly shifted after
-  // sending.
+  // sending. Re-asserted one frame later too: on a slow connection the
+  // initial load's images can still be settling their layout right as this
+  // runs, which on a real device (unlike a fast local reload) leaves enough
+  // of a gap between "committed" and "actually laid out" for the first
+  // scrollHeight read to undershoot. Also re-runs when the footer's own
+  // height changes (attaching an image grows it) -- otherwise the newly
+  // taller footer covers the last message instead of the view shifting up
+  // to keep it clear.
   useEffect(() => {
     const el = scrollContainerRef.current;
-    if (el) el.scrollTop = el.scrollHeight;
-  }, [messages.length]);
+    if (!el) return;
+    el.scrollTop = el.scrollHeight;
+    const raf = requestAnimationFrame(() => {
+      el.scrollTop = el.scrollHeight;
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [messages.length, footerHeight]);
+
+  // The footer (attachments strip + input bar) is pinned with `fixed` on
+  // mobile -- see the JSX below -- so it no longer takes up space in the
+  // flex column and the scrollable message list needs matching bottom
+  // padding or the last messages end up hidden behind it. Measured rather
+  // than a fixed guess because the footer's own height changes (attachment
+  // previews, a validation error line).
+  useEffect(() => {
+    const el = footerRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver((entries) => {
+      setFooterHeight(entries[0].contentRect.height);
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  // Re-settles the message list against the bottom whenever the keyboard
+  // opens or closes, so the latest message doesn't end up hidden behind it
+  // -- the instant scrollTop effect above only reacts to new messages/
+  // footer content changes, not to the keyboard's own resize (padding-only
+  // changes don't affect the footer's content box). Instant, not smooth:
+  // the keyboard's own slide animation keeps resizing the visual viewport
+  // for a couple hundred ms after the first signal fires, so a scrollTo
+  // animation targeting a scrollHeight read at that instant can undershoot
+  // -- reasserted once more after a delay to catch the settled state.
+  const keepScrolledToBottom = useCallback(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    el.scrollTop = el.scrollHeight;
+    setTimeout(() => {
+      const el2 = scrollContainerRef.current;
+      if (el2) el2.scrollTop = el2.scrollHeight;
+    }, 300);
+  }, []);
+
+  // iOS can fire the textarea's blur slightly before the keyboard's close
+  // animation actually finishes, so isFocused is corrected against the real
+  // visual viewport height rather than trusting focus/blur alone -- that's
+  // what actually drives whether the input bar's bottom padding needs to
+  // clear the keyboard.
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const handleResize = () => {
+      setIsFocused(window.innerHeight - vv.height > 100);
+      keepScrolledToBottom();
+    };
+    vv.addEventListener("resize", handleResize);
+    return () => vv.removeEventListener("resize", handleResize);
+  }, [keepScrolledToBottom]);
 
   // Revoke every still-live preview URL on unmount only -- individual
   // removals revoke their own URL immediately (see handleRemovePendingImage).
@@ -202,6 +269,17 @@ export default function ChatThreadPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Grows the textarea with its content (capped, then scrolls internally --
+  // see the max-h-[120px] overflow-y-auto classes below). Driven by `body`
+  // rather than called from the change handler directly so it also re-runs
+  // when a send clears the text back to empty, shrinking the box back down.
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  }, [body]);
+
   const handleFilesSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
     e.target.value = "";
@@ -209,7 +287,7 @@ export default function ChatThreadPage() {
 
     const room = MAX_CHAT_IMAGES - pendingImages.length;
     if (room <= 0) {
-      setAttachError(`画像は最大${MAX_CHAT_IMAGES}枚までです`);
+      setAttachError(`一度に送信できる画像は最大${MAX_CHAT_IMAGES}枚までです`);
       return;
     }
 
@@ -235,8 +313,16 @@ export default function ChatThreadPage() {
     }));
     setPendingImages((prev) => [...prev, ...entries]);
 
-    entries.forEach((entry, i) => {
-      compressChatImage(accepted[i]).then((compressed) => {
+    // Compressed one at a time rather than fired all at once -- running
+    // several createImageBitmap/canvas decodes concurrently is what was
+    // exhausting mobile browsers' canvas memory when attaching several
+    // full-size camera photos together, silently producing a corrupt (but
+    // still "successfully" uploadable) image for one of them instead of
+    // throwing -- hence a broken-image icon with no visible send error.
+    (async () => {
+      for (let i = 0; i < entries.length; i++) {
+        const entry = entries[i];
+        const compressed = await compressChatImage(accepted[i]);
         setPendingImages((prev) =>
           prev.map((p) => {
             if (p.id !== entry.id) return p;
@@ -249,8 +335,8 @@ export default function ChatThreadPage() {
             };
           })
         );
-      });
-    });
+      }
+    })();
   };
 
   const handleRemovePendingImage = (id: string) => {
@@ -298,7 +384,7 @@ export default function ChatThreadPage() {
   if (!authLoading && !user) {
     return (
       <div className="mx-auto w-full px-4 py-24 text-center">
-        <p className="text-sm text-gray-400 dark:text-gray-500">
+        <p className="text-sm text-muted">
           チャットを利用するにはログインが必要です
         </p>
       </div>
@@ -306,30 +392,34 @@ export default function ChatThreadPage() {
   }
 
   return (
-    <div className="mx-auto flex h-full w-full max-w-2xl flex-col pb-[env(safe-area-inset-bottom)]">
-      <div className="flex shrink-0 items-center gap-2 border-b border-gray-100 px-4 py-3 dark:border-gray-800">
+    <div className="mx-auto flex h-full w-full max-w-2xl flex-col">
+      <div className="flex shrink-0 items-center gap-2 border-b border-border px-4 py-3">
         <button
           type="button"
           onClick={() => router.push("/chat")}
           aria-label="戻る"
-          className="flex h-8 w-8 items-center justify-center rounded-full text-gray-500 transition hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+          className="flex h-8 w-8 items-center justify-center rounded-full text-muted transition hover:bg-gray-100 dark:hover:bg-gray-800"
         >
           <ChevronLeft size={20} />
         </button>
-        <h1 className="truncate text-sm font-semibold text-gray-900 dark:text-gray-100">
+        <h1 className="truncate text-sm font-semibold text-foreground">
           {otherUsername || "..."}
         </h1>
       </div>
 
-      <div ref={scrollContainerRef} className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
+      <div
+        ref={scrollContainerRef}
+        className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pt-4 pb-[var(--footer-h)] lg:pb-4"
+        style={{ "--footer-h": `${footerHeight}px` } as React.CSSProperties}
+      >
         {loading ? (
-          <p className="py-12 text-center text-sm text-gray-400 dark:text-gray-500">
+          <p className="py-12 text-center text-sm text-muted">
             読み込み中...
           </p>
         ) : error ? (
           <p className="py-12 text-center text-sm text-red-500 dark:text-red-400">{error}</p>
         ) : messages.length === 0 ? (
-          <p className="py-12 text-center text-sm text-gray-400 dark:text-gray-500">
+          <p className="py-12 text-center text-sm text-muted">
             まだメッセージがありません。最初のメッセージを送ってみましょう。
           </p>
         ) : (
@@ -342,7 +432,7 @@ export default function ChatThreadPage() {
                 <div key={m.id} className="flex flex-col gap-1">
                   {showDateSeparator && (
                     <div className="flex justify-center py-1">
-                      <span className="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-medium text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+                      <span className="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-medium text-muted dark:bg-gray-800">
                         {formatDateHeader(m.createdAt)}
                       </span>
                     </div>
@@ -360,7 +450,7 @@ export default function ChatThreadPage() {
                     className={`flex items-end gap-1 ${mine ? "justify-end" : "justify-start"}`}
                   >
                     {mine && (
-                      <div className="flex shrink-0 flex-col items-center gap-0.5 text-[10px] whitespace-nowrap text-gray-400 dark:text-gray-500">
+                      <div className="flex shrink-0 flex-col items-center gap-0.5 text-[10px] whitespace-nowrap text-muted">
                         {m.isRead && <span>既読</span>}
                         <span>{formatMessageTime(m.createdAt)}</span>
                       </div>
@@ -368,25 +458,48 @@ export default function ChatThreadPage() {
                     <div
                       className={`flex max-w-[75%] flex-col gap-1 ${mine ? "items-end" : "items-start"}`}
                     >
-                      {hasImages && (
-                        <div className="flex flex-wrap gap-1">
-                          {m.imageUrls.map((url, imgIndex) => (
-                            <button
-                              key={imgIndex}
-                              type="button"
-                              onClick={() => setLightbox({ urls: m.imageUrls, index: imgIndex })}
-                              className="relative h-36 w-36 overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800"
-                            >
-                              <Image src={url} alt="" fill sizes="144px" className="object-cover" />
-                            </button>
-                          ))}
-                        </div>
-                      )}
+                      {hasImages &&
+                        (m.imageUrls.length === 1 ? (
+                          <button
+                            type="button"
+                            onClick={() => setLightbox({ urls: m.imageUrls, index: 0 })}
+                            className="relative aspect-square w-36 overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800"
+                          >
+                            <Image src={m.imageUrls[0]} alt="" fill sizes="144px" className="object-cover" />
+                          </button>
+                        ) : (
+                          // Explicit 6rem (=96px) tracks, smaller than a
+                          // single image's 9rem -- the message column's own
+                          // max-w-75% cap plus the timestamp column leaves
+                          // less than 2x9rem (or even 2x7rem) of room on a
+                          // narrow phone, and a w-fit grid doesn't shrink to
+                          // respect its parent's max-width the way ordinary
+                          // text does, so it would overflow past it and
+                          // under the timestamp instead of wrapping. 6rem
+                          // stays clear of that even at a 320px viewport.
+                          // w-fit + explicit lengths (not grid-cols-2's 1fr)
+                          // because 1fr tracks don't contribute their content
+                          // size to a w-fit container's own intrinsic sizing,
+                          // leaving the grid measuring narrower than its
+                          // thumbnails and making them overlap.
+                          <div className="grid w-fit grid-cols-[repeat(2,6rem)] gap-1.5">
+                            {m.imageUrls.map((url, imgIndex) => (
+                              <button
+                                key={imgIndex}
+                                type="button"
+                                onClick={() => setLightbox({ urls: m.imageUrls, index: imgIndex })}
+                                className="relative aspect-square w-24 overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800"
+                              >
+                                <Image src={url} alt="" fill sizes="96px" className="object-cover" />
+                              </button>
+                            ))}
+                          </div>
+                        ))}
                       {!!m.body && (
                         <div
                           className={`whitespace-pre-wrap break-words rounded-2xl px-3.5 py-2 text-sm ${
                             mine
-                              ? "bg-pink-600 text-white"
+                              ? "bg-accent text-accent-foreground"
                               : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200"
                           }`}
                         >
@@ -395,7 +508,7 @@ export default function ChatThreadPage() {
                       )}
                     </div>
                     {!mine && (
-                      <div className="flex shrink-0 flex-col items-center gap-0.5 text-[10px] whitespace-nowrap text-gray-400 dark:text-gray-500">
+                      <div className="flex shrink-0 flex-col items-center gap-0.5 text-[10px] whitespace-nowrap text-muted">
                         <span>{formatMessageTime(m.createdAt)}</span>
                       </div>
                     )}
@@ -407,8 +520,26 @@ export default function ChatThreadPage() {
         )}
       </div>
 
+      {/* Fixed to the viewport (not just this column) on mobile so it can
+          never end up left behind mid-scroll the way a plain flex/shrink-0
+          footer could if the browser's own chrome (address bar) resizes the
+          visual viewport out from under a layout-flow element while a swipe
+          is in progress. Back to a normal flow element at desktop, where
+          that class of bug doesn't apply and fixed positioning would need
+          to account for the sidebar/right-rail columns instead. */}
+      <div
+        ref={footerRef}
+        className={`fixed inset-x-0 bottom-0 z-10 mx-auto w-full max-w-2xl border-t border-border bg-background lg:static lg:inset-auto lg:mx-0 lg:w-auto lg:pb-0 ${
+          // The 12px floor only applies once the keyboard is open, to clear
+          // the space the keyboard/URL-bar push-up needs. At rest,
+          // viewport-fit=cover means env(safe-area-inset-bottom) alone
+          // already reserves the real home-indicator inset on notched
+          // devices, without an artificial gap on devices that don't need one.
+          isFocused ? "pb-[max(12px,env(safe-area-inset-bottom))]" : "pb-[env(safe-area-inset-bottom)]"
+        }`}
+      >
       {pendingImages.length > 0 && (
-        <div className="flex shrink-0 gap-2 overflow-x-auto border-t border-gray-100 px-4 pt-3 dark:border-gray-800">
+        <div className="flex gap-2 overflow-x-auto px-4 pt-3">
           {pendingImages.map((p) => (
             <div
               key={p.id}
@@ -433,10 +564,10 @@ export default function ChatThreadPage() {
         </div>
       )}
       {attachError && (
-        <p className="shrink-0 px-4 pt-2 text-xs text-red-500 dark:text-red-400">{attachError}</p>
+        <p className="px-4 pt-2 text-xs text-red-500 dark:text-red-400">{attachError}</p>
       )}
 
-      <div className="shrink-0 border-t border-gray-100 px-4 py-3 dark:border-gray-800">
+      <div className="px-4 py-3">
         <div className="flex items-end gap-2">
           <input
             ref={fileInputRef}
@@ -450,12 +581,13 @@ export default function ChatThreadPage() {
             type="button"
             onClick={() => fileInputRef.current?.click()}
             aria-label="画像を添付"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-gray-400 transition hover:bg-gray-100 hover:text-accent dark:hover:bg-gray-800"
           >
             <ImagePlus size={20} />
           </button>
           <EmojiPickerButton onSelect={(emoji) => setBody((prev) => prev + emoji)} />
           <textarea
+            ref={textareaRef}
             value={body}
             onChange={(e) => setBody(e.target.value)}
             onKeyDown={(e) => {
@@ -464,25 +596,35 @@ export default function ChatThreadPage() {
                 handleSend();
               }
             }}
+            onFocus={() => {
+              setIsFocused(true);
+              keepScrolledToBottom();
+            }}
+            onBlur={() => {
+              setIsFocused(false);
+              keepScrolledToBottom();
+            }}
             maxLength={1000}
             rows={1}
             placeholder="メッセージを入力..."
-            className="flex-1 resize-none rounded-full border border-gray-300 px-4 py-2 text-sm text-gray-900 outline-none focus:border-pink-400 dark:border-gray-700 dark:text-gray-100"
+            className="max-h-[120px] flex-1 resize-none overflow-y-auto rounded-2xl border border-gray-300 px-4 py-2 text-sm text-foreground outline-none focus:border-accent dark:border-gray-700"
           />
           <button
             type="button"
             onClick={handleSend}
+            onPointerDown={(e) => e.preventDefault()}
             disabled={
               (!body.trim() && pendingImages.length === 0) ||
               sending ||
               pendingImages.some((p) => p.compressing)
             }
             aria-label="送信"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-pink-600 text-white transition hover:bg-pink-700 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent text-accent-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Send size={16} />
           </button>
         </div>
+      </div>
       </div>
 
       {lightbox && (

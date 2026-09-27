@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* Reserves the scrollbar's width up front so pages/tabs that cross the
    viewport-height threshold (scrollbar appears/disappears) don't shift the
    whole layout sideways when that happens. */
@@ -28,22 +30,38 @@ html {
 }
 
 :root {
-  --background: #f7f7f8;
-  --foreground: #171717;
+  --background: #fafafa;
+  --card: #ffffff;
+  --foreground: #09090b;
+  --muted: #71717a;
+  --border: #e4e4e7;
+  --accent: #00b4d8;
+  --accent-foreground: #09090b;
+  --like: #ff2a85;
+}
+
+.dark {
+  --background: #0f0f12;
+  --card: #1a1a1e;
+  --foreground: #eeeeee;
+  --muted: #a1a1aa;
+  --border: rgba(255, 255, 255, 0.08);
+  --accent: #00e5ff;
+  --accent-foreground: #09090b;
+  --like: #ff2a85;
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-card: var(--card);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-like: var(--like);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #030712;
-    --foreground: #ededed;
-  }
 }
 
 body {

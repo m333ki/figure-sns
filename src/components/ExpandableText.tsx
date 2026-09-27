@@ -6,7 +6,7 @@ export default function ExpandableText({
   text,
   className = "",
   wrapperClassName = "",
-  buttonClassName = "mt-0.5 text-xs font-medium text-gray-400 transition hover:text-pink-500 dark:text-gray-500",
+  buttonClassName = "mt-0.5 text-xs font-medium text-gray-400 transition hover:text-accent dark:text-gray-500",
   lines = 3,
 }: {
   text: ReactNode;

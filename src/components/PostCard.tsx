@@ -36,7 +36,7 @@ export default function PostCard({
       : null;
 
   return (
-    <article className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md dark:border-gray-800 dark:bg-gray-900">
+    <article className="overflow-hidden rounded-xl border border-border bg-card shadow-sm transition hover:shadow-md">
       <div className="relative w-full">
         <PostImageCarousel
           images={post.imageUrls}
@@ -65,7 +65,7 @@ export default function PostCard({
             title={post.isPinned ? "固定を解除" : "投稿を固定する"}
             className={`absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full transition ${
               post.isPinned
-                ? "bg-pink-600 text-white"
+                ? "bg-accent text-accent-foreground"
                 : "bg-black/40 text-white hover:bg-black/60"
             }`}
           >
@@ -80,17 +80,17 @@ export default function PostCard({
             {(post.isPinned || post.figureName) && (
               <div className="flex items-center gap-1.5">
                 {post.isPinned && (
-                  <span className="text-xs font-medium text-pink-600 dark:text-pink-400">固定</span>
+                  <span className="text-xs font-medium text-accent">固定</span>
                 )}
                 {post.figureName && (
-                  <h3 className="truncate text-base font-semibold text-gray-900 dark:text-gray-100">
+                  <h3 className="truncate text-base font-semibold text-foreground">
                     {post.figureName}
                   </h3>
                 )}
               </div>
             )}
             {post.makerName && (
-              <p className="truncate text-sm text-gray-500 dark:text-gray-400">{post.makerName}</p>
+              <p className="truncate text-sm text-muted">{post.makerName}</p>
             )}
           </div>
         )}
@@ -98,7 +98,7 @@ export default function PostCard({
         {post.caption && (
           <ExpandableText
             text={<HashtagText text={post.caption} />}
-            className="whitespace-pre-wrap break-words text-sm text-gray-600 dark:text-gray-400"
+            className="whitespace-pre-wrap break-words text-sm text-muted"
           />
         )}
 
@@ -116,7 +116,7 @@ export default function PostCard({
                   className="object-cover"
                 />
               </div>
-              <span className="truncate text-sm font-medium text-gray-700 dark:text-gray-300">
+              <span className="truncate text-sm font-medium text-muted">
                 {post.username}
               </span>
             </Link>
@@ -130,7 +130,7 @@ export default function PostCard({
                   className="object-cover"
                 />
               </div>
-              <span className="truncate text-sm font-medium text-gray-700 dark:text-gray-300">
+              <span className="truncate text-sm font-medium text-muted">
                 {post.username}
               </span>
             </div>
@@ -141,7 +141,7 @@ export default function PostCard({
               <Link
                 href={`/chat/${post.userId}?username=${encodeURIComponent(post.username)}`}
                 aria-label={`${post.username}さんにメッセージを送る`}
-                className="flex items-center text-gray-400 transition hover:text-pink-500 dark:text-gray-500"
+                className="flex items-center text-gray-400 transition hover:text-accent dark:text-gray-500"
               >
                 <Send size={18} strokeWidth={1.8} />
               </Link>
@@ -152,7 +152,7 @@ export default function PostCard({
                 type="button"
                 onClick={onOpenDetail}
                 aria-label="コメントを見る"
-                className="flex items-center gap-1.5 text-sm text-gray-400 transition hover:text-pink-500 dark:text-gray-500"
+                className="flex items-center gap-1.5 text-sm text-gray-400 transition hover:text-accent dark:text-gray-500"
               >
                 <CommentIcon />
                 {post.commentCount}
@@ -166,7 +166,7 @@ export default function PostCard({
                 aria-pressed={isLiked}
                 aria-label={isLiked ? "いいねを取り消す" : "いいねする"}
                 className={`flex items-center gap-1.5 text-sm transition ${
-                  isLiked ? "text-pink-600 dark:text-pink-400" : "text-gray-400 hover:text-pink-500 dark:text-gray-500"
+                  isLiked ? "text-like" : "text-gray-400 hover:text-like dark:text-gray-500"
                 }`}
               >
                 <HeartIcon filled={!!isLiked} />
@@ -186,7 +186,7 @@ export default function PostCard({
                 aria-pressed={isSaved}
                 aria-label={isSaved ? "保存を解除" : "保存する"}
                 className={`flex items-center transition ${
-                  isSaved ? "text-pink-600 dark:text-pink-400" : "text-gray-400 hover:text-pink-500 dark:text-gray-500"
+                  isSaved ? "text-accent" : "text-gray-400 hover:text-accent dark:text-gray-500"
                 }`}
               >
                 <Bookmark size={20} fill={isSaved ? "currentColor" : "none"} strokeWidth={1.8} />

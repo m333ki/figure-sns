@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabase";
 
-export const MAX_CHAT_IMAGES = 3;
+export const MAX_CHAT_IMAGES = 10;
 export const MAX_CHAT_IMAGE_BYTES = 10 * 1024 * 1024;
 const MAX_DIMENSION = 1920;
 const COMPRESS_QUALITY = 0.8;
@@ -63,7 +63,11 @@ export async function compressChatImage(file: File): Promise<CompressedChatImage
     const blob = await new Promise<Blob | null>((resolve) =>
       canvas.toBlob(resolve, mimeType, COMPRESS_QUALITY)
     );
-    if (!blob) throw new Error("compression produced no output");
+    // A canvas that failed to actually draw anything (seen under memory
+    // pressure from processing several photos back to back) still produces
+    // a "valid" but near-empty blob rather than throwing -- treat that the
+    // same as a hard failure and fall back to the original file below.
+    if (!blob || blob.size < 100) throw new Error("compression produced invalid output");
     return { blob, ext: useWebp ? "webp" : "jpg" };
   } catch (e) {
     console.error("chat image compression failed, using original", e);

@@ -181,7 +181,7 @@ export default function DisplayShelf() {
         <button
           type="button"
           onClick={() => setSettingsOpen(true)}
-          className="flex items-center gap-1.5 rounded-full border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-600 transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800"
+          className="flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-muted transition hover:bg-gray-50 dark:hover:bg-gray-800"
         >
           <Settings size={14} />
           表示設定
@@ -189,7 +189,7 @@ export default function DisplayShelf() {
       </div>
 
       {loading ? (
-        <p className="py-12 text-center text-sm text-gray-500 dark:text-gray-400">
+        <p className="py-12 text-center text-sm text-muted">
           読み込み中...
         </p>
       ) : (
@@ -352,7 +352,7 @@ function RowTitleLabel({
           type="button"
           onClick={commit}
           disabled={saving}
-          className="rounded-md bg-pink-600 px-2 py-1 text-[11px] font-medium text-white transition hover:bg-pink-700 disabled:opacity-50"
+          className="rounded-md bg-accent px-2 py-1 text-[11px] font-medium text-accent-foreground transition hover:opacity-90 disabled:opacity-50"
         >
           保存
         </button>

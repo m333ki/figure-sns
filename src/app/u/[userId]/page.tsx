@@ -74,7 +74,7 @@ export default function PublicProfilePage() {
 
   if (isSelf || authLoading || loading) {
     return (
-      <p className="py-12 text-center text-sm text-gray-400 dark:text-gray-500">読み込み中...</p>
+      <p className="py-12 text-center text-sm text-muted">読み込み中...</p>
     );
   }
 
@@ -101,7 +101,7 @@ export default function PublicProfilePage() {
 
       <div className="mx-auto max-w-4xl px-4 py-4">
         {userPosts.length === 0 ? (
-          <p className="py-12 text-center text-sm text-gray-400 dark:text-gray-500">
+          <p className="py-12 text-center text-sm text-muted">
             まだ投稿がありません
           </p>
         ) : (

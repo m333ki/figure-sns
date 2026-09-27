@@ -15,7 +15,7 @@ export default function HashtagText({ text }: { text: string }) {
             key={index}
             href={hashtagSearchHref(segment.value)}
             onClick={(e) => e.stopPropagation()}
-            className="text-pink-600 hover:underline dark:text-pink-400"
+            className="text-accent hover:underline"
           >
             #{segment.value}
           </Link>

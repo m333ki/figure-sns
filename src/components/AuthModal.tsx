@@ -109,17 +109,17 @@ export default function AuthModal() {
         aria-modal="true"
         aria-label={mode === "login" ? "ログイン" : "新規登録"}
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-sm overflow-hidden rounded-2xl bg-white shadow-xl dark:bg-gray-900"
+        className="w-full max-w-sm overflow-hidden rounded-2xl bg-card shadow-xl"
       >
-        <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3 dark:border-gray-800">
-          <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+        <div className="flex items-center justify-between border-b border-border px-4 py-3">
+          <h2 className="text-sm font-semibold text-foreground">
             {mode === "login" ? "ログイン" : "新規登録"}
           </h2>
           <button
             type="button"
             onClick={resetAndClose}
             aria-label="閉じる"
-            className="flex h-7 w-7 items-center justify-center rounded-full text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+            className="flex h-7 w-7 items-center justify-center rounded-full text-muted transition hover:bg-gray-100 dark:hover:bg-gray-800"
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
@@ -129,13 +129,13 @@ export default function AuthModal() {
 
         {confirmationSent ? (
           <div className="p-4">
-            <p className="text-sm text-gray-700 dark:text-gray-300">
+            <p className="text-sm text-muted">
               確認メールを送信しました。メール内のリンクをクリックすると登録が完了します。
             </p>
             <button
               type="button"
               onClick={resetAndClose}
-              className="mt-4 w-full rounded-full bg-pink-600 py-2 text-sm font-medium text-white transition hover:bg-pink-700"
+              className="mt-4 w-full rounded-full bg-accent py-2 text-sm font-medium text-accent-foreground transition hover:opacity-90"
             >
               閉じる
             </button>
@@ -146,7 +146,7 @@ export default function AuthModal() {
               {mode === "signup" && (
                 <>
                   <label
-                    className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400"
+                    className="mb-1 block text-xs font-medium text-muted"
                     htmlFor="auth-username"
                   >
                     ユーザー名
@@ -158,13 +158,13 @@ export default function AuthModal() {
                     onChange={(e) => setUsername(e.target.value)}
                     maxLength={30}
                     placeholder="例: figure_taro"
-                    className="mb-4 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none focus:border-pink-400 dark:border-gray-700 dark:text-gray-100"
+                    className="mb-4 w-full rounded-lg border border-border px-3 py-2 text-sm text-foreground outline-none focus:border-accent"
                   />
                 </>
               )}
 
               <label
-                className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400"
+                className="mb-1 block text-xs font-medium text-muted"
                 htmlFor="auth-email"
               >
                 メールアドレス
@@ -175,11 +175,11 @@ export default function AuthModal() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="mb-4 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none focus:border-pink-400 dark:border-gray-700 dark:text-gray-100"
+                className="mb-4 w-full rounded-lg border border-border px-3 py-2 text-sm text-foreground outline-none focus:border-accent"
               />
 
               <label
-                className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400"
+                className="mb-1 block text-xs font-medium text-muted"
                 htmlFor="auth-password"
               >
                 パスワード
@@ -194,7 +194,7 @@ export default function AuthModal() {
                 onKeyDown={(e) => {
                   if (e.key === "Enter") handleSubmit();
                 }}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none focus:border-pink-400 dark:border-gray-700 dark:text-gray-100"
+                className="w-full rounded-lg border border-border px-3 py-2 text-sm text-foreground outline-none focus:border-accent"
               />
 
               {errorMessage && (
@@ -204,7 +204,7 @@ export default function AuthModal() {
               <button
                 type="button"
                 onClick={() => switchMode(mode === "login" ? "signup" : "login")}
-                className="mt-3 text-xs font-medium text-pink-600 transition hover:underline dark:text-pink-400"
+                className="mt-3 text-xs font-medium text-accent transition hover:underline"
               >
                 {mode === "login"
                   ? "アカウントをお持ちでない方はこちら"
@@ -212,12 +212,12 @@ export default function AuthModal() {
               </button>
             </div>
 
-            <div className="border-t border-gray-100 px-4 py-3 dark:border-gray-800">
+            <div className="border-t border-border px-4 py-3">
               <button
                 type="button"
                 onClick={handleSubmit}
                 disabled={!canSubmit}
-                className="w-full rounded-full bg-pink-600 py-2 text-sm font-medium text-white transition hover:bg-pink-700 disabled:cursor-not-allowed disabled:opacity-50"
+                className="w-full rounded-full bg-accent py-2 text-sm font-medium text-accent-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {submitting ? "処理中..." : mode === "login" ? "ログイン" : "登録する"}
               </button>

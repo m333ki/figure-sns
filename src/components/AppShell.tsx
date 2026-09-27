@@ -25,12 +25,12 @@ export default function AppShell({ children }: { children: ReactNode }) {
       <Sidebar />
 
       <div
-        className={`flex w-full flex-1 flex-col border-gray-200 bg-white lg:max-w-3xl lg:border-x lg:pb-0 dark:border-gray-800 dark:bg-gray-950 ${
+        className={`flex w-full flex-1 flex-col border-border bg-background lg:max-w-3xl lg:border-x lg:pb-0 ${
           chatThread ? "h-[100dvh]" : "min-h-screen"
         } ${reserveNavSpace ? "pb-[calc(3.5rem+env(safe-area-inset-bottom))]" : ""}`}
       >
         <MobileHeader />
-        <main className="flex-1">{children}</main>
+        <main className="min-h-0 flex-1">{children}</main>
       </div>
 
       <RightRail />

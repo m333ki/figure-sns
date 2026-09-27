@@ -1,7 +1,7 @@
 export default function RightSideAdBanner() {
   return (
-    <div className="mx-auto w-full max-w-[300px] rounded-2xl border border-gray-200 bg-gray-50 p-3 dark:border-gray-800 dark:bg-gray-900/60">
-      <p className="mb-2 text-center text-[11px] font-medium tracking-wide text-gray-400 dark:text-gray-500">
+    <div className="mx-auto w-full max-w-[300px] rounded-2xl border border-border bg-card p-3">
+      <p className="mb-2 text-center text-[11px] font-medium tracking-wide text-muted">
         スポンサーリンク
       </p>
       {/* Placeholder slot -- swap for a real AdSense <ins>/<script> or ASP

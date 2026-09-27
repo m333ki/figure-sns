@@ -4,8 +4,8 @@ import TrendingHashtags from "@/components/TrendingHashtags";
 export default function RightRail() {
   return (
     <aside className="sticky top-0 hidden h-screen w-96 shrink-0 overflow-y-auto px-4 py-4 xl:block">
-      <div className="rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
-        <h2 className="mb-1 text-base font-bold text-gray-900 dark:text-gray-100">
+      <div className="rounded-2xl border border-border bg-card p-4">
+        <h2 className="mb-1 text-base font-bold text-foreground">
           トレンド
         </h2>
         <TrendingHashtags />
