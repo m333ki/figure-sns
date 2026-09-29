@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
-import { ChevronLeft, ImagePlus, Send, X } from "lucide-react";
+import { ChevronLeft, ImagePlus, MoreHorizontal, Send, X } from "lucide-react";
 import { ChatMessage } from "@/types";
 import { fetchThread, sendMessage, markThreadRead, subscribeToThread } from "@/lib/messages";
 import {
@@ -16,6 +16,7 @@ import {
 import Linkify from "@/components/Linkify";
 import EmojiPickerButton from "@/components/EmojiPickerButton";
 import ChatImageLightbox from "@/components/ChatImageLightbox";
+import ReportModal from "@/components/ReportModal";
 import { useAuth } from "@/context/AuthContext";
 import { useNotifications } from "@/context/NotificationsContext";
 
@@ -77,6 +78,7 @@ export default function ChatThreadPage() {
   const [pendingImages, setPendingImages] = useState<PendingChatImage[]>([]);
   const [attachError, setAttachError] = useState<string | null>(null);
   const [lightbox, setLightbox] = useState<{ urls: string[]; index: number } | null>(null);
+  const [reportMessageId, setReportMessageId] = useState<string | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const messageElsRef = useRef<Map<string, HTMLDivElement>>(new Map());
   const pendingReadIdsRef = useRef<Set<string>>(new Set());
@@ -510,6 +512,14 @@ export default function ChatThreadPage() {
                     {!mine && (
                       <div className="flex shrink-0 flex-col items-center gap-0.5 text-[10px] whitespace-nowrap text-muted">
                         <span>{formatMessageTime(m.createdAt)}</span>
+                        <button
+                          type="button"
+                          onClick={() => setReportMessageId(m.id)}
+                          aria-label="このメッセージを報告"
+                          className="flex h-5 w-5 items-center justify-center rounded-full transition hover:bg-gray-100 dark:hover:bg-gray-800"
+                        >
+                          <MoreHorizontal size={12} />
+                        </button>
                       </div>
                     )}
                   </div>
@@ -632,6 +642,14 @@ export default function ChatThreadPage() {
           urls={lightbox.urls}
           initialIndex={lightbox.index}
           onClose={() => setLightbox(null)}
+        />
+      )}
+
+      {reportMessageId && (
+        <ReportModal
+          targetType="message"
+          targetId={reportMessageId}
+          onClose={() => setReportMessageId(null)}
         />
       )}
     </div>

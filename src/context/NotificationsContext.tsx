@@ -37,7 +37,14 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
       ]);
       setCounts({ notifications: notifications || undefined, chat: chat || undefined });
     } catch (e) {
-      console.error("failed to refresh notification counts", e);
+      // Logged in full regardless of shape -- a bare console.error(..., e)
+      // can print as an empty/unhelpful object for some error types (e.g.
+      // a PostgrestError whose fields aren't own-enumerable), which made a
+      // real failure here indistinguishable from a transient one.
+      console.error(
+        "failed to refresh notification counts",
+        e instanceof Error ? e.message : JSON.stringify(e)
+      );
     }
     // Depend on user?.id (not `user`): supabase-js hands AuthContext a new
     // session/user object on every auth event, including background token

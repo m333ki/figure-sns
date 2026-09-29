@@ -6,6 +6,7 @@ import { PostsProvider } from "@/context/PostsContext";
 import { ComposerProvider } from "@/context/ComposerContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { NotificationsProvider } from "@/context/NotificationsContext";
+import { ToastProvider } from "@/context/ToastContext";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -44,15 +45,17 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           enableSystem
           storageKey="figstagram-theme"
         >
-          <AuthProvider>
-            <NotificationsProvider>
-              <PostsProvider>
-                <ComposerProvider>
-                  <AppShell>{children}</AppShell>
-                </ComposerProvider>
-              </PostsProvider>
-            </NotificationsProvider>
-          </AuthProvider>
+          <ToastProvider>
+            <AuthProvider>
+              <NotificationsProvider>
+                <PostsProvider>
+                  <ComposerProvider>
+                    <AppShell>{children}</AppShell>
+                  </ComposerProvider>
+                </PostsProvider>
+              </NotificationsProvider>
+            </AuthProvider>
+          </ToastProvider>
         </ThemeProvider>
       </body>
     </html>

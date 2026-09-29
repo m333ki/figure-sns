@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
-import { ChevronLeft, LogOut, Sun, Moon, Monitor } from "lucide-react";
+import { ChevronLeft, ChevronRight, LogOut, Mail, Shield, Sun, Moon, Monitor } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { fetchIsAdmin } from "@/lib/admin";
 
 const THEME_OPTIONS = [
   { value: "light", label: "ライト", icon: Sun },
@@ -17,6 +19,17 @@ export default function SettingsPage() {
   const { user, username, loading, signOut } = useAuth();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    fetchIsAdmin(user.id)
+      .then(setIsAdmin)
+      .catch(() => setIsAdmin(false));
+    // user?.id (not `user`): see the matching comment in mypage/page.tsx --
+    // the object reference churns on every auth event.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   useEffect(() => {
     // Gates rendering the active theme option until after hydration --
@@ -105,6 +118,42 @@ export default function SettingsPage() {
             ログアウト
           </button>
         </div>
+
+        <p className="mb-2 mt-6 px-1 text-xs font-medium text-muted">
+          サポート
+        </p>
+        <div className="overflow-hidden rounded-xl border border-border">
+          <Link
+            href="/contact"
+            className="flex items-center justify-between px-4 py-3 text-sm text-foreground transition hover:bg-gray-50 dark:hover:bg-gray-900"
+          >
+            <span className="flex items-center gap-2">
+              <Mail size={16} className="text-muted" />
+              お問い合わせ・ご要望（カスタマーサポート）
+            </span>
+            <ChevronRight size={16} className="text-muted" />
+          </Link>
+        </div>
+
+        {isAdmin && (
+          <>
+            <p className="mb-2 mt-6 px-1 text-xs font-medium text-muted">
+              管理
+            </p>
+            <div className="overflow-hidden rounded-xl border border-border">
+              <Link
+                href="/admin"
+                className="flex items-center justify-between px-4 py-3 text-sm text-foreground transition hover:bg-gray-50 dark:hover:bg-gray-900"
+              >
+                <span className="flex items-center gap-2">
+                  <Shield size={16} className="text-muted" />
+                  通報管理
+                </span>
+                <ChevronRight size={16} className="text-muted" />
+              </Link>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

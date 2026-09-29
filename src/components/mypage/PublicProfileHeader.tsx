@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { MoreHorizontal } from "lucide-react";
 import { Profile } from "@/lib/profiles";
 import UserAvatar from "@/components/UserAvatar";
 import FollowButton from "@/components/FollowButton";
 import FollowListModal from "@/components/mypage/FollowListModal";
+import ReportModal from "@/components/ReportModal";
 
 export default function PublicProfileHeader({
   profile,
@@ -22,6 +24,8 @@ export default function PublicProfileHeader({
   onFollowChange?: (nowFollowing: boolean) => void;
 }) {
   const [followList, setFollowList] = useState<"followers" | "following" | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
 
   return (
     <section className="border-b border-border bg-card px-4 py-6">
@@ -83,6 +87,41 @@ export default function PublicProfileHeader({
           initialIsFollowing={isFollowing}
           onChange={onFollowChange}
         />
+
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setMenuOpen((v) => !v)}
+            aria-label="プロフィールメニュー"
+            aria-haspopup="menu"
+            aria-expanded={menuOpen}
+            className="flex h-9 w-9 items-center justify-center rounded-full text-muted transition hover:bg-gray-100 dark:hover:bg-gray-800"
+          >
+            <MoreHorizontal size={18} />
+          </button>
+
+          {menuOpen && (
+            <>
+              <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
+              <div
+                role="menu"
+                className="absolute right-0 top-full z-20 mt-1 w-40 overflow-hidden rounded-lg border border-border bg-card py-1 shadow-lg"
+              >
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    setReportOpen(true);
+                  }}
+                  className="block w-full px-3 py-2 text-left text-sm text-red-600 transition hover:bg-gray-50 dark:text-red-400 dark:hover:bg-gray-700"
+                >
+                  このユーザーを報告する
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       {followList && (
@@ -91,6 +130,10 @@ export default function PublicProfileHeader({
           mode={followList}
           onClose={() => setFollowList(null)}
         />
+      )}
+
+      {reportOpen && (
+        <ReportModal targetType="user" targetId={profile.userId} onClose={() => setReportOpen(false)} />
       )}
     </section>
   );
