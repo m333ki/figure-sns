@@ -22,6 +22,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "FigStagram | フィギュア専用SNS",
   description: "フィギュアコレクターのための投稿・共有SNS",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "FigStagram",
+  },
 };
 
 export const viewport: Viewport = {
@@ -29,6 +34,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
   interactiveWidget: "resizes-content",
+  themeColor: "#0F0F12",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

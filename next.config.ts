@@ -11,6 +11,12 @@ const nextConfig: NextConfig = {
   // (moving its corner just trades which tab it covers). Real compile/
   // runtime errors still show via the full-screen overlay without it.
   devIndicators: false,
+  compiler: {
+    // Belt-and-suspenders: the codebase has no stray console.log today, but
+    // this strips any that creep back in from a production build, keeping
+    // console.error so real failures still surface.
+    removeConsole: process.env.NODE_ENV === "production" ? { exclude: ["error"] } : false,
+  },
   images: {
     remotePatterns: [
       {
