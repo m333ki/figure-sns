@@ -74,11 +74,39 @@ export async function fetchProfile(userId: string): Promise<Profile | null> {
   return data ? mapDbProfileToProfile(data as DbProfile) : null;
 }
 
+// Handles used in URLs/mentions, so kept to a conservative safe set. Not
+// enforced retroactively -- only on a new value someone actively submits.
+const USERNAME_PATTERN = /^[a-zA-Z0-9_.]{3,20}$/;
+
+export function isValidUsernameFormat(username: string): boolean {
+  return USERNAME_PATTERN.test(username);
+}
+
+export async function isUsernameTaken(
+  username: string,
+  excludingUserId: string
+): Promise<boolean> {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("user_id")
+    .eq("username", username)
+    .neq("user_id", excludingUserId)
+    .maybeSingle();
+  if (error) throw error;
+  return !!data;
+}
+
 export async function updateMyProfile(
   userId: string,
   username: string,
   input: { displayName: string; bio: string; avatarUrl: string | null }
 ): Promise<Profile> {
+  // profiles.username is re-upserted from this value on every save (see
+  // below), so the auth copy has to move with it or the next save anywhere
+  // else in the app would silently revert the rename back to the old one.
+  const { error: authError } = await supabase.auth.updateUser({ data: { username } });
+  if (authError) throw authError;
+
   const { data, error } = await supabase
     .from("profiles")
     .upsert(

@@ -2,7 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import { UserProfile } from "@/types";
-import { Profile, updateMyProfile, uploadAvatarImage } from "@/lib/profiles";
+import {
+  Profile,
+  isUsernameTaken,
+  isValidUsernameFormat,
+  updateMyProfile,
+  uploadAvatarImage,
+} from "@/lib/profiles";
 import { useAuth } from "@/context/AuthContext";
 import UserAvatar from "@/components/UserAvatar";
 
@@ -15,7 +21,8 @@ export default function EditProfileModal({
   onSaved: (profile: Profile) => void;
   onClose: () => void;
 }) {
-  const { user, username } = useAuth();
+  const { user } = useAuth();
+  const [username, setUsername] = useState(profile.username);
   const [displayName, setDisplayName] = useState(profile.displayName);
   const [bio, setBio] = useState(profile.bio);
   const [avatarPreview, setAvatarPreview] = useState(profile.avatarUrl);
@@ -35,7 +42,7 @@ export default function EditProfileModal({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [onClose, saving]);
 
-  const canSave = displayName.trim().length > 0 && !saving;
+  const canSave = displayName.trim().length > 0 && username.trim().length > 0 && !saving;
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -52,11 +59,24 @@ export default function EditProfileModal({
 
   const handleSave = async () => {
     if (!canSave || !user) return;
+    const trimmedUsername = username.trim();
+    if (!isValidUsernameFormat(trimmedUsername)) {
+      setError("ユーザーIDは半角英数字・.・_のみ、3〜20文字で入力してください");
+      return;
+    }
     setSaving(true);
     setError(null);
     try {
+      if (trimmedUsername !== profile.username) {
+        const taken = await isUsernameTaken(trimmedUsername, user.id);
+        if (taken) {
+          setError("このユーザーIDは既に使われています");
+          setSaving(false);
+          return;
+        }
+      }
       const avatarUrl = avatarFile ? await uploadAvatarImage(avatarFile) : avatarPreview;
-      const saved = await updateMyProfile(user.id, username ?? "unknown", {
+      const saved = await updateMyProfile(user.id, trimmedUsername, {
         displayName: displayName.trim(),
         bio: bio.trim(),
         avatarUrl,
@@ -143,6 +163,25 @@ export default function EditProfileModal({
               accept="image/*"
               onChange={handleFileChange}
               className="hidden"
+            />
+          </div>
+
+          <label
+            className="mb-1 block text-xs font-medium text-muted"
+            htmlFor="edit-username"
+          >
+            ユーザーID
+          </label>
+          <div className="mb-4 flex items-center rounded-lg border border-border focus-within:border-accent">
+            <span className="pl-3 text-sm text-muted">@</span>
+            <input
+              id="edit-username"
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              maxLength={20}
+              disabled={saving}
+              className="w-full rounded-lg bg-transparent py-2 pl-1 pr-3 text-sm text-foreground outline-none disabled:opacity-60"
             />
           </div>
 
