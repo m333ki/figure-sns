@@ -26,6 +26,7 @@ type AuthContextValue = {
     username: string
   ) => Promise<{ needsEmailConfirmation: boolean }>;
   signIn: (email: string, password: string) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
 };
 
@@ -85,6 +86,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAuthModalOpen(false);
   }, []);
 
+  // Full-page redirect to Google, then back -- there's no session to apply
+  // here synchronously. Supabase parses the returned token from the URL on
+  // its own (detectSessionInUrl defaults to true) and fires onAuthStateChange,
+  // which this provider already listens for above.
+  const signInWithGoogle = useCallback(async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: window.location.origin },
+    });
+    if (error) throw error;
+  }, []);
+
   const signOut = useCallback(async () => {
     await supabase.auth.signOut();
     setSession(null);
@@ -107,9 +120,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       closeAuthModal,
       signUp,
       signIn,
+      signInWithGoogle,
       signOut,
     }),
-    [session, user, loading, authModalOpen, promptLogin, closeAuthModal, signUp, signIn, signOut]
+    [
+      session,
+      user,
+      loading,
+      authModalOpen,
+      promptLogin,
+      closeAuthModal,
+      signUp,
+      signIn,
+      signInWithGoogle,
+      signOut,
+    ]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
