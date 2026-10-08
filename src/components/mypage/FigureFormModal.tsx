@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
-import { Camera, Eraser, Plus, Wand2 } from "lucide-react";
+import { Camera, Eraser, Lightbulb, Plus, Wand2 } from "lucide-react";
 import {
   deleteShelfFigure,
   resizeFigurePhoto,
@@ -73,6 +73,7 @@ export default function FigureFormModal({
   const [processingImage, setProcessingImage] = useState(false);
   const [bgRemovalNotice, setBgRemovalNotice] = useState<string | null>(null);
   const [showMaskEditor, setShowMaskEditor] = useState(false);
+  const [showBgTips, setShowBgTips] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -389,6 +390,28 @@ export default function FigureFormModal({
             onChange={handleFileChange}
             className="hidden"
           />
+
+          <button
+            type="button"
+            onClick={() => setShowBgTips((prev) => !prev)}
+            className="mb-1.5 flex items-center gap-1 text-[11px] font-medium text-muted transition hover:text-foreground"
+          >
+            <Lightbulb size={12} />
+            {showBgTips ? "閉じる" : "背景透過について"}
+          </button>
+          {showBgTips && (
+            <div className="mb-4 rounded-lg bg-gray-50 px-3 py-2 text-[11px] leading-relaxed text-muted dark:bg-gray-800/60">
+              <p className="mb-1 font-medium text-foreground">
+                💡 背景透過をキレイに行うコツ
+              </p>
+              <ul className="list-disc space-y-0.5 pl-4">
+                <li>明るい場所で、無地（単色）の背景で撮影すると綺麗に切り抜けます。</li>
+                <li>フィギュアと同色の背景や、影が強く出ている写真はうまく透過されない場合があります。</li>
+                <li>透過処理には1分ほどかかる場合があります。</li>
+                <li>うまく透過できなかった場合は、「手動で調整」からご自身で範囲を調整できます。</li>
+              </ul>
+            </div>
+          )}
 
           {(canRemoveBackground || canManuallyAdjust) && (
             <div className="mb-4 flex flex-wrap gap-2">
