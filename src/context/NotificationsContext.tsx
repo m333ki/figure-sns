@@ -30,21 +30,34 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
       setCounts({});
       return;
     }
-    try {
-      const [notifications, chat] = await Promise.all([
-        fetchUnreadNotificationCount(),
-        fetchUnreadMessageCount(),
-      ]);
-      setCounts({ notifications: notifications || undefined, chat: chat || undefined });
-    } catch (e) {
-      // Logged in full regardless of shape -- a bare console.error(..., e)
-      // can print as an empty/unhelpful object for some error types (e.g.
-      // a PostgrestError whose fields aren't own-enumerable), which made a
-      // real failure here indistinguishable from a transient one.
-      console.error(
-        "failed to refresh notification counts",
-        e instanceof Error ? e.message : JSON.stringify(e)
-      );
+    // Right after a fresh signup/login, this fires alongside several other
+    // first-load requests (profile, posts, ...) on a session that just came
+    // alive -- occasionally one of them (often a HEAD/count request, which
+    // carries no response body to explain *why*) gets a transient failure
+    // from that burst. One retry clears it without ever touching the user;
+    // only a failure that survives the retry is worth logging.
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        const [notifications, chat] = await Promise.all([
+          fetchUnreadNotificationCount(),
+          fetchUnreadMessageCount(),
+        ]);
+        setCounts({ notifications: notifications || undefined, chat: chat || undefined });
+        return;
+      } catch (e) {
+        if (attempt === 2) {
+          // Logged in full regardless of shape -- a bare console.error(..., e)
+          // can print as an empty/unhelpful object for some error types (e.g.
+          // a PostgrestError whose fields aren't own-enumerable), which made a
+          // real failure here indistinguishable from a transient one.
+          console.error(
+            "failed to refresh notification counts",
+            e instanceof Error ? e.message : JSON.stringify(e)
+          );
+          return;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 800));
+      }
     }
     // Depend on user?.id (not `user`): supabase-js hands AuthContext a new
     // session/user object on every auth event, including background token

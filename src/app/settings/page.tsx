@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
-import { ChevronLeft, ChevronRight, LogOut, Mail, Shield, Sun, Moon, Monitor } from "lucide-react";
+import { ChevronLeft, ChevronRight, FileText, Lock, LogOut, Mail, Shield, Sun, Moon, Monitor } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { fetchIsAdmin } from "@/lib/admin";
 
@@ -125,11 +125,31 @@ export default function SettingsPage() {
         <div className="overflow-hidden rounded-xl border border-border">
           <Link
             href="/contact"
-            className="flex items-center justify-between px-4 py-3 text-sm text-foreground transition hover:bg-gray-50 dark:hover:bg-gray-900"
+            className="flex items-center justify-between border-b border-border px-4 py-3 text-sm text-foreground transition hover:bg-gray-50 dark:hover:bg-gray-900"
           >
             <span className="flex items-center gap-2">
               <Mail size={16} className="text-muted" />
               お問い合わせ・ご要望（カスタマーサポート）
+            </span>
+            <ChevronRight size={16} className="text-muted" />
+          </Link>
+          <Link
+            href="/terms"
+            className="flex items-center justify-between border-b border-border px-4 py-3 text-sm text-foreground transition hover:bg-gray-50 dark:hover:bg-gray-900"
+          >
+            <span className="flex items-center gap-2">
+              <FileText size={16} className="text-muted" />
+              利用規約
+            </span>
+            <ChevronRight size={16} className="text-muted" />
+          </Link>
+          <Link
+            href="/privacy"
+            className="flex items-center justify-between px-4 py-3 text-sm text-foreground transition hover:bg-gray-50 dark:hover:bg-gray-900"
+          >
+            <span className="flex items-center gap-2">
+              <Lock size={16} className="text-muted" />
+              プライバシーポリシー
             </span>
             <ChevronRight size={16} className="text-muted" />
           </Link>

@@ -272,11 +272,15 @@ export default function AuthModal() {
               </button>
               {mode === "signup" && (
                 <p className="mt-2 text-center text-[11px] text-muted">
-                  登録することで、プライバシーポリシーに同意したものとみなされます。
-                  <br />
-                  <Link href="/privacy" target="_blank" className="text-accent hover:underline">
-                    プライバシーポリシー（/privacy）
+                  登録することで、
+                  <Link href="/terms" target="_blank" className="text-accent hover:underline">
+                    利用規約
                   </Link>
+                  および
+                  <Link href="/privacy" target="_blank" className="text-accent hover:underline">
+                    プライバシーポリシー
+                  </Link>
+                  に同意したものとみなされます。
                 </p>
               )}
             </div>
