@@ -25,7 +25,7 @@ export default function Sidebar() {
           href="/"
           className="mb-2 block rounded-full px-3 py-2 text-xl font-bold tracking-tight text-accent transition hover:bg-gray-100 dark:hover:bg-gray-800"
         >
-          FigStagram
+          Figgy
         </Link>
 
         <nav className="flex flex-col gap-0.5">

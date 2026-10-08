@@ -18,7 +18,7 @@ export default function MobileHeader() {
         href="/"
         className="text-lg font-bold tracking-tight text-accent"
       >
-        FigStagram
+        Figgy
       </Link>
       <div className="flex items-center gap-1">
         <Link

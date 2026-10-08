@@ -17,7 +17,7 @@ export default function PrivacyPage() {
 
       <div className="space-y-6 text-sm leading-relaxed text-muted">
         <p>
-          FigStagram（以下「本サービス」）は、ユーザーの皆さまに安心してご利用いただけるよう、以下の方針に基づいて個人情報を取り扱います。
+          Figgy（以下「本サービス」）は、ユーザーの皆さまに安心してご利用いただけるよう、以下の方針に基づいて個人情報を取り扱います。
         </p>
 
         <Section title="1. 取得する情報と利用目的">

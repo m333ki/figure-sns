@@ -20,12 +20,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "FigStagram | フィギュア専用SNS",
+  title: "Figgy | フィギュア専用SNS",
   description: "フィギュアコレクターのための投稿・共有SNS",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "FigStagram",
+    title: "Figgy",
   },
 };
 
@@ -49,7 +49,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           attribute="class"
           defaultTheme="light"
           enableSystem
-          storageKey="figstagram-theme"
+          storageKey="figgy-theme"
         >
           <ToastProvider>
             <AuthProvider>
