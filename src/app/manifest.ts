@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Figgy | フィギュア専用SNS",
-    short_name: "Figgy",
+    name: "FigNakama | フィギュア専用SNS",
+    short_name: "FigNakama",
     description: "フィギュアコレクターのための投稿・共有SNS",
     start_url: "/",
     display: "standalone",

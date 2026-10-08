@@ -20,12 +20,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Figgy | フィギュア専用SNS",
+  title: "FigNakama | フィギュア専用SNS",
   description: "フィギュアコレクターのための投稿・共有SNS",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Figgy",
+    title: "FigNakama",
   },
 };
 

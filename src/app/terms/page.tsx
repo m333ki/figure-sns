@@ -17,7 +17,7 @@ export default function TermsPage() {
 
       <div className="space-y-6 text-sm leading-relaxed text-muted">
         <p>
-          この利用規約（以下「本規約」）は、Figgy（以下「本サービス」）の利用条件を定めるものです。ユーザーの皆さまには、本規約に同意の上、本サービスをご利用いただきます。
+          この利用規約（以下「本規約」）は、FigNakama（以下「本サービス」）の利用条件を定めるものです。ユーザーの皆さまには、本規約に同意の上、本サービスをご利用いただきます。
         </p>
 
         <Section title="1. 適用">
