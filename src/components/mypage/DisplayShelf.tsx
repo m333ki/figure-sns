@@ -6,8 +6,14 @@ import Image from "next/image";
 import { Settings } from "lucide-react";
 import { ShelfItem } from "@/types";
 import { fetchMyShelf, SHELF_SLOT_COUNT } from "@/lib/shelfFigures";
-import { fetchMyShelfRowTitles, saveShelfRowTitle } from "@/lib/shelfRowTitles";
-import { LIGHTING_STYLES, type CaseColor, type Lighting } from "@/lib/shelfDisplay";
+import { fetchMyShelfRowSettings, saveShelfRowTitle, saveShelfRowLighting } from "@/lib/shelfRowTitles";
+import {
+  LIGHTING_STYLES,
+  fetchMyShelfCaseColor,
+  saveMyShelfCaseColor,
+  type CaseColor,
+  type Lighting,
+} from "@/lib/shelfDisplay";
 import { getAutoRemoveBackground, setAutoRemoveBackground } from "@/lib/shelfPreferences";
 import { useAuth } from "@/context/AuthContext";
 import FigureFormModal from "@/components/mypage/FigureFormModal";
@@ -125,13 +131,29 @@ export default function DisplayShelf() {
     const load = async () => {
       setLoading(true);
       try {
-        const [shelfData, titleData] = await Promise.all([
+        // Row settings/case color are caught independently so the actual
+        // shelf figures (the important part) still load even if, say, the
+        // display-settings migration hasn't been run yet -- that should
+        // only mean colors fall back to defaults, not an empty shelf.
+        const [shelfData, rowSettings, savedCaseColor] = await Promise.all([
           fetchMyShelf(),
-          fetchMyShelfRowTitles(),
+          fetchMyShelfRowSettings().catch((e) => {
+            console.error("failed to load shelf row settings", e);
+            return Array.from({ length: ROWS }, () => ({
+              title: null as string | null,
+              lighting: "warm" as Lighting,
+            }));
+          }),
+          fetchMyShelfCaseColor().catch((e) => {
+            console.error("failed to load shelf case color", e);
+            return "black" as CaseColor;
+          }),
         ]);
         if (!cancelled) {
           setSlots(shelfData);
-          setRowTitles(titleData);
+          setRowTitles(rowSettings.map((s) => s.title));
+          setRowLighting(rowSettings.map((s) => s.lighting));
+          setCaseColor(savedCaseColor);
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -165,8 +187,19 @@ export default function DisplayShelf() {
     setRowTitles((prev) => prev.map((t, i) => (i === rowIndex ? saved : t)));
   };
 
+  const handleChangeCaseColor = (value: CaseColor) => {
+    setCaseColor(value);
+    // Optimistic, like the lighting swatches below -- a failed save just
+    // means it reverts to the old color on the next load, not worth
+    // blocking the button on a round-trip for a cosmetic preference.
+    saveMyShelfCaseColor(value).catch((e) => console.error("failed to save shelf case color", e));
+  };
+
   const handleSetRowLighting = (rowIndex: number, value: Lighting) => {
     setRowLighting((prev) => prev.map((l, i) => (i === rowIndex ? value : l)));
+    saveShelfRowLighting(rowIndex, value).catch((e) =>
+      console.error("failed to save shelf row lighting", e)
+    );
   };
 
   const rows = Array.from({ length: ROWS }, (_, rowIndex) =>
@@ -274,7 +307,7 @@ export default function DisplayShelf() {
         <ShelfSettingsModal
           onClose={() => setSettingsOpen(false)}
           caseColor={caseColor}
-          onChangeCaseColor={setCaseColor}
+          onChangeCaseColor={handleChangeCaseColor}
           rowTitles={rowTitles}
           rowLighting={rowLighting}
           onChangeRowLighting={handleSetRowLighting}
