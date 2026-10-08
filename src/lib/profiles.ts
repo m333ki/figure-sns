@@ -13,6 +13,10 @@ export type Profile = {
   displayName: string;
   bio: string;
   avatarUrl: string | null;
+  // False only for a row the `handle_new_user` DB trigger auto-created with
+  // a placeholder username (Google OAuth signup, which collects no username
+  // up front) -- OnboardingGate watches this to prompt for a real one.
+  usernameSet: boolean;
 };
 
 type DbProfile = {
@@ -21,6 +25,7 @@ type DbProfile = {
   display_name: string;
   bio: string;
   avatar_url: string | null;
+  username_set: boolean;
 };
 
 function mapDbProfileToProfile(row: DbProfile): Profile {
@@ -30,6 +35,7 @@ function mapDbProfileToProfile(row: DbProfile): Profile {
     displayName: row.display_name,
     bio: row.bio,
     avatarUrl: row.avatar_url,
+    usernameSet: row.username_set,
   };
 }
 
@@ -116,6 +122,7 @@ export async function updateMyProfile(
         display_name: input.displayName,
         bio: input.bio,
         avatar_url: input.avatarUrl,
+        username_set: true,
         updated_at: new Date().toISOString(),
       },
       { onConflict: "user_id" }

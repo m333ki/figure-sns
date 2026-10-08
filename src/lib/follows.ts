@@ -7,6 +7,7 @@ type DbProfile = {
   display_name: string;
   bio: string;
   avatar_url: string | null;
+  username_set: boolean;
 };
 
 function mapDbProfileToProfile(row: DbProfile): Profile {
@@ -16,6 +17,7 @@ function mapDbProfileToProfile(row: DbProfile): Profile {
     displayName: row.display_name,
     bio: row.bio,
     avatarUrl: row.avatar_url,
+    usernameSet: row.username_set,
   };
 }
 

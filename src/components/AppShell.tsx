@@ -8,6 +8,7 @@ import MobileHeader from "@/components/MobileHeader";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import PostComposerModal from "@/components/PostComposerModal";
 import AuthModal from "@/components/AuthModal";
+import OnboardingGate from "@/components/OnboardingGate";
 import { useComposer } from "@/context/ComposerContext";
 import { isChatThreadRoute } from "@/lib/nav-items";
 
@@ -38,6 +39,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
 
       {isOpen && <PostComposerModal onClose={close} />}
       <AuthModal />
+      <OnboardingGate />
     </div>
   );
 }
