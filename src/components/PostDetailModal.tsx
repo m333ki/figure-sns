@@ -14,6 +14,7 @@ import PostOptionsMenu from "@/components/PostOptionsMenu";
 import ExpandableText from "@/components/ExpandableText";
 import HashtagText from "@/components/HashtagText";
 import PostImageCarousel from "@/components/PostImageCarousel";
+import AffiliateLink from "@/components/AffiliateLink";
 
 type ReplyTarget = { parentId: string; username: string };
 
@@ -270,6 +271,12 @@ export default function PostDetailModal({
                 wrapperClassName="mb-3"
                 className="whitespace-pre-wrap break-words text-sm text-muted"
               />
+            )}
+
+            {post.affiliateUrl && (
+              <div className="mb-3">
+                <AffiliateLink url={post.affiliateUrl} label="商品を見る" />
+              </div>
             )}
 
             <div className="mb-4 flex items-center justify-between">

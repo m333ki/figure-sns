@@ -12,6 +12,7 @@ type DbPost = {
   image_url: string;
   image_urls: string[] | null;
   caption: string | null;
+  affiliate_url: string | null;
   like_count: number;
   comment_count: number;
   created_at: string;
@@ -37,6 +38,7 @@ function mapDbPostToPost(row: DbPost): Post {
     makerName: row.maker_name,
     imageUrls,
     caption: row.caption,
+    affiliateUrl: row.affiliate_url ?? null,
     likeCount: row.like_count,
     commentCount: row.comment_count ?? 0,
   };
@@ -58,6 +60,7 @@ export type CreatePostInput = {
   figureName?: string | null;
   makerName?: string | null;
   caption?: string | null;
+  affiliateUrl?: string | null;
   files: File[];
 };
 
@@ -112,6 +115,7 @@ export async function createPost(input: CreatePostInput): Promise<Post> {
     figure_name: input.figureName ?? null,
     maker_name: input.makerName ?? null,
     caption: input.caption ?? null,
+    affiliate_url: input.affiliateUrl ?? null,
     image_url: imageUrls[0],
   };
 
@@ -121,8 +125,25 @@ export async function createPost(input: CreatePostInput): Promise<Post> {
     .select()
     .single();
 
-  // Fallback for before the image_urls migration has been run: post with
-  // just the first image rather than failing the whole submission.
+  // Fallback for before the image_urls/affiliate_url migrations have been
+  // run: drop whichever column Postgres complains about rather than failing
+  // the whole submission.
+  if (error?.message?.includes("affiliate_url")) {
+    ({ data, error } = await supabase
+      .from("posts")
+      .insert({
+        user_id: basePayload.user_id,
+        username: basePayload.username,
+        user_avatar_url: basePayload.user_avatar_url,
+        figure_name: basePayload.figure_name,
+        maker_name: basePayload.maker_name,
+        caption: basePayload.caption,
+        image_url: basePayload.image_url,
+        image_urls: imageUrls,
+      })
+      .select()
+      .single());
+  }
   if (error?.message?.includes("image_urls")) {
     ({ data, error } = await supabase.from("posts").insert(basePayload).select().single());
   }

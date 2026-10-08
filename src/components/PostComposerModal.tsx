@@ -6,6 +6,7 @@ import Image from "next/image";
 import { ChevronLeft, ChevronRight, Plus, X } from "lucide-react";
 import { usePosts } from "@/context/PostsContext";
 import { MAX_POST_IMAGES } from "@/lib/posts";
+import { isValidAffiliateUrl } from "@/components/AffiliateLink";
 
 type PickedImage = { id: string; file: File; previewUrl: string };
 
@@ -15,6 +16,7 @@ export default function PostComposerModal({ onClose }: { onClose: () => void }) 
   const [figureName, setFigureName] = useState("");
   const [makerName, setMakerName] = useState("");
   const [caption, setCaption] = useState("");
+  const [affiliateUrl, setAffiliateUrl] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -75,6 +77,11 @@ export default function PostComposerModal({ onClose }: { onClose: () => void }) 
 
   const handleSubmit = async () => {
     if (!canSubmit) return;
+    const trimmedAffiliateUrl = affiliateUrl.trim();
+    if (trimmedAffiliateUrl && !isValidAffiliateUrl(trimmedAffiliateUrl)) {
+      setErrorMessage("購入リンクはhttp(s)から始まる正しいURLで入力してください");
+      return;
+    }
     setSubmitting(true);
     setErrorMessage(null);
     try {
@@ -82,6 +89,7 @@ export default function PostComposerModal({ onClose }: { onClose: () => void }) 
         figureName: figureName.trim() || null,
         makerName: makerName.trim() || null,
         caption: caption.trim() || null,
+        affiliateUrl: trimmedAffiliateUrl || null,
         files: images.map((img) => img.file),
       });
       onClose();
@@ -241,6 +249,21 @@ export default function PostComposerModal({ onClose }: { onClose: () => void }) 
             placeholder="例: グッドスマイルカンパニー"
             className="w-full rounded-lg border border-border px-3 py-2 text-sm text-foreground outline-none focus:border-accent"
           />
+
+          <label className="mb-1 mt-4 block text-xs font-medium text-muted" htmlFor="post-affiliate-url">
+            商品の購入リンク（任意）
+          </label>
+          <input
+            id="post-affiliate-url"
+            type="url"
+            value={affiliateUrl}
+            onChange={(e) => setAffiliateUrl(e.target.value)}
+            placeholder="https://..."
+            className="w-full rounded-lg border border-border px-3 py-2 text-sm text-foreground outline-none focus:border-accent"
+          />
+          <p className="mt-1 text-[11px] leading-relaxed text-muted">
+            設定すると投稿詳細に「商品を見る」リンクが表示されます（Amazon/楽天のアフィリエイトリンクなど）
+          </p>
 
           <label className="mb-1 mt-4 block text-xs font-medium text-muted" htmlFor="post-caption">
             キャプション（任意）

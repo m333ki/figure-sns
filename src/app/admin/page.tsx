@@ -3,9 +3,8 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
-import { fetchIsAdmin, fetchReportsWithContext, deleteUserAsAdmin, type ReportWithContext } from "@/lib/admin";
+import { fetchReportsWithContext, deleteUserAsAdmin, type ReportWithContext } from "@/lib/admin";
 import { deletePost } from "@/lib/posts";
 import ChatImageLightbox from "@/components/ChatImageLightbox";
 
@@ -21,9 +20,7 @@ function formatDateTime(iso: string): string {
 }
 
 export default function AdminReportsPage() {
-  const { user, loading: authLoading } = useAuth();
   const { showToast } = useToast();
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [reports, setReports] = useState<ReportWithContext[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -42,27 +39,12 @@ export default function AdminReportsPage() {
     }
   };
 
+  // AdminLayout (src/app/admin/layout.tsx) already confirms is_admin before
+  // this page ever renders -- safe to load unconditionally.
   useEffect(() => {
-    if (!user) return;
-    let cancelled = false;
-    fetchIsAdmin(user.id)
-      .then((admin) => {
-        if (cancelled) return;
-        setIsAdmin(admin);
-        if (admin) loadReports();
-        else setLoading(false);
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setIsAdmin(false);
-          setLoading(false);
-        }
-      });
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadReports();
+  }, []);
 
   const handleDeletePost = async (report: ReportWithContext) => {
     if (!report.post) return;
@@ -98,13 +80,6 @@ export default function AdminReportsPage() {
       setPendingId(null);
     }
   };
-
-  if (!authLoading && !user) {
-    return <p className="py-24 text-center text-sm text-muted">ログインが必要です</p>;
-  }
-  if (isAdmin === false) {
-    return <p className="py-24 text-center text-sm text-muted">このページへのアクセス権がありません</p>;
-  }
 
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-6">

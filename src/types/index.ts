@@ -7,6 +7,7 @@ export type Post = {
   makerName: string | null;
   imageUrls: string[];
   caption?: string | null;
+  affiliateUrl?: string | null;
   likeCount: number;
   commentCount: number;
   isPinned?: boolean;
