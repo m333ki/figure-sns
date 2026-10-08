@@ -8,11 +8,17 @@ import type { TrendingHashtag } from "@/app/api/trends/route";
 
 const TRENDING_COUNT = 20;
 
+// Post volume is still too low for trends to be meaningful -- shows a
+// "coming soon" placeholder instead of real results until this is flipped
+// back off. The aggregation route/fetch below is untouched either way.
+const SHOW_COMING_SOON = true;
+
 export default function TrendingHashtags() {
   const [hashtags, setHashtags] = useState<TrendingHashtag[] | null>(null);
   const [error, setError] = useState(false);
 
   useEffect(() => {
+    if (SHOW_COMING_SOON) return;
     let cancelled = false;
     fetch(`/api/trends?limit=${TRENDING_COUNT}`)
       .then((res) => {
@@ -29,6 +35,18 @@ export default function TrendingHashtags() {
       cancelled = true;
     };
   }, []);
+
+  if (SHOW_COMING_SOON) {
+    return (
+      <div className="flex flex-col items-center gap-2 py-10 text-center">
+        <Sparkles size={22} className="text-gray-300 dark:text-gray-600" />
+        <p className="text-sm font-medium text-foreground">準備中（Coming Soon）</p>
+        <p className="max-w-[220px] text-xs text-muted">
+          現在コンテンツを集計中です。人気のフィギュア投稿がここに表示されるようになります！
+        </p>
+      </div>
+    );
+  }
 
   if (error) {
     return (
